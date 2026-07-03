@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>VAT MANAGEMENT</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Poppins:wght@700;800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,1,0" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--text:#111827;--muted:#6b7280;--line:#e5e7eb;--primary:#2563eb;--nav:#071b33;--nav2:#0b2b4e;--green:#16a34a;--red:#dc2626;--orange:#f59e0b;--purple:#7c3aed;--shadow:0 14px 36px rgba(15,23,42,.08);--radius:20px}*{box-sizing:border-box}html,body{margin:0;max-width:100%;overflow-x:hidden;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif}.material-symbols-rounded{font-size:22px}.hidden{display:none!important}button,input,select,textarea{font-family:inherit}.login-page{min-height:100dvh;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at 20% 10%,#dbeafe,transparent 30%),var(--bg)}.login-card{position:relative;width:min(420px,100%);background:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.8);border-radius:28px;box-shadow:var(--shadow);padding:34px}.brand{text-align:center;margin-bottom:22px}.logo{display:grid;place-items:center;overflow:hidden}.brand .logo{width:58px;height:58px;margin:0 auto 14px;border-radius:18px;background:linear-gradient(135deg,#ff8a1f,#ff3d54);box-shadow:0 16px 30px rgba(255,99,71,.25)}.sun-logo{width:64%;height:64%}.brand h1{font-family:Poppins,sans-serif;letter-spacing:.08em;margin:0;font-size:26px}.brand p{color:var(--muted);margin:6px 0 0;font-weight:700}.field{margin:16px 0}.field label{display:block;font-size:13px;color:var(--muted);font-weight:800;margin-bottom:8px}.input-wrap{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);border-radius:15px;padding:0 12px}.input-wrap input,.input-wrap select{border:0;background:transparent;outline:0;width:100%;height:46px;color:var(--text);font-size:15px}.primary-btn,.small-btn,.ghost-btn,.icon-btn{cursor:pointer;border:0}.primary-btn{width:100%;height:48px;border-radius:15px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;font-weight:900;font-size:15px}.small-btn{height:40px;border-radius:13px;background:#2563eb;color:#fff;padding:0 14px;font-weight:900;display:inline-flex;align-items:center;gap:6px;justify-content:center}.ghost-btn{height:40px;border-radius:13px;border:1px solid var(--line);background:var(--card);color:var(--text);padding:0 14px;font-weight:900;display:inline-flex;align-items:center;gap:6px;justify-content:center}.icon-btn{width:42px;height:42px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--text);display:grid;place-items:center}.lang-login{position:absolute;top:16px;right:16px;width:44px;height:34px;border-radius:12px;border:1px solid var(--line);background:#fff;font-weight:900}.app{display:flex;min-height:100dvh}.sidebar{width:280px;background:linear-gradient(180deg,var(--nav),var(--nav2));color:#fff;padding:22px 16px;display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:30}.side-brand{display:flex;align-items:center;gap:12px;padding:8px 8px 24px}.side-brand .logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#ff8a1f,#ff3d54);box-shadow:0 12px 24px rgba(255,99,71,.22)}.side-brand strong{font-family:Poppins,sans-serif;letter-spacing:.05em}.nav{display:grid;gap:7px}.nav button{height:48px;border:0;border-radius:14px;background:transparent;color:#dbeafe;text-align:left;padding:0 12px;font-weight:800;font-size:14px;display:flex;align-items:center;gap:10px;cursor:pointer}.nav button.active,.nav button:hover{background:#2563eb;color:#fff}.side-user{margin-top:auto;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:14px;display:flex;gap:10px;align-items:center}.main{margin-left:280px;width:calc(100% - 280px);padding:22px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.title-row h2{margin:0;font-family:Poppins,sans-serif;font-size:26px}.title-row p{margin:3px 0 0;color:var(--muted);font-weight:700}.top-actions{display:flex;align-items:center;gap:8px}.date-pill{height:42px;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:0 12px;display:flex;align-items:center;gap:7px;font-weight:800}.mobile-menu{display:none}.grid{display:grid;gap:16px}.cards{grid-template-columns:repeat(4,minmax(0,1fr));margin:16px 0}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}.metric{display:flex;gap:12px;align-items:center}.metric-icon{width:50px;height:50px;border-radius:16px;display:grid;place-items:center;flex:0 0 50px}.blue{background:#dbeafe;color:#2563eb}.green{background:#dcfce7;color:#16a34a}.orange{background:#ffedd5;color:#f97316}.purple{background:#ede9fe;color:#7c3aed}.metric small{display:block;color:var(--muted);font-weight:900;font-size:12px}.metric b{display:block;font-size:23px;margin-top:4px}.content-grid{grid-template-columns:1.15fr .85fr}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:3px}.tabs button{border:1px solid var(--line);background:var(--card);color:var(--text);height:38px;min-width:84px;padding:0 12px;border-radius:13px;font-weight:900;white-space:nowrap}.tabs button.active{background:#2563eb;color:#fff}.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.input-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px}.input-card label{display:block;color:var(--muted);font-weight:900;font-size:12px;margin-bottom:7px}.input-card input{height:44px;width:100%;border:1px solid var(--line);border-radius:13px;padding:0 12px;background:var(--bg);font-size:16px;color:var(--text);outline:0}.total-box{margin-top:14px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;border-radius:20px;padding:18px}.total-box small{display:block;opacity:.86;font-weight:900}.total-box b{font-size:28px}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:16px}.table{width:100%;border-collapse:collapse;min-width:850px}.table th,.table td{padding:10px;border-bottom:1px solid var(--line);font-size:12px;text-align:left;white-space:nowrap}.table th{color:var(--muted);font-weight:900}.table input,.table select{width:100%;min-width:105px;height:34px;border:1px solid var(--line);border-radius:9px;padding:0 8px;background:var(--card);color:var(--text);outline:0}.table textarea{min-width:130px;border:1px solid var(--line);border-radius:9px;padding:8px;background:var(--card);color:var(--text)}.fake-chart{height:220px;border-radius:18px;background:linear-gradient(180deg,rgba(37,99,235,.14),transparent),repeating-linear-gradient(0deg,transparent 0 49px,var(--line) 50px)}.donut{width:200px;height:200px;border-radius:50%;margin:auto;background:conic-gradient(#2563eb 0 62%,#8b5cf6 62% 88%,#86efac 88%);display:grid;place-items:center}.donut:before{content:attr(data-label);white-space:pre;text-align:center;width:110px;height:110px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-weight:900;font-size:13px}.modal-backdrop{position:fixed;inset:0;z-index:90;background:rgba(15,23,42,.48);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:16px}.modal-card{width:min(720px,100%);max-height:92dvh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:0 30px 80px rgba(15,23,42,.28);padding:20px}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.modal-head h3{margin:0;font-size:19px}.modal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.modal-field label{display:block;font-size:11px;color:var(--muted);font-weight:900;margin-bottom:5px}.modal-field input,.modal-field select,.modal-field textarea{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:12px;min-height:38px;padding:0 10px;font-size:15px;outline:0}.modal-field textarea{min-height:42px;padding:9px;resize:none}.modal-total{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;border-radius:14px;padding:10px}.modal-total small{display:block;opacity:.85;font-size:11px;font-weight:900}.modal-total b{font-size:21px}.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+@media(max-width:900px){body{font-size:14px}.login-page{padding:16px}.login-card{padding:26px 20px}.brand h1{font-size:22px}.sidebar{transform:translateX(-100%);transition:.2s;width:min(86vw,310px)}.sidebar.open{transform:translateX(0)}.main{margin-left:0;width:100%;padding:12px}.mobile-menu{display:grid}.topbar{gap:8px;align-items:flex-start}.title-row h2{font-size:21px}.top-actions{gap:6px}.date-pill{display:none}.cards,.content-grid,.form-grid{grid-template-columns:1fr!important;gap:10px}.card,.input-card{padding:13px;border-radius:17px}.metric-icon{width:44px;height:44px;border-radius:14px;flex-basis:44px}.metric b{font-size:20px}.toolbar{flex-direction:column;align-items:stretch}.toolbar>div{width:100%}.toolbar .input-wrap{max-width:none!important;width:100%}.small-btn,.ghost-btn{width:100%;height:38px}.input-card input{height:40px}.total-box{grid-template-columns:1fr!important;padding:15px}.total-box b{font-size:24px}.table-wrap{width:100%;overflow-x:auto}.table{min-width:720px}.fake-chart{height:180px}.donut{width:170px;height:170px}.modal-backdrop{align-items:center;padding:8px}.modal-card{width:100%;max-height:96dvh;border-radius:18px;padding:12px}.modal-head{margin-bottom:8px}.modal-head h3{font-size:17px}.modal-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.modal-field label{font-size:10px;margin-bottom:3px}.modal-field input,.modal-field select{min-height:34px;height:34px;border-radius:10px;font-size:14px;padding:0 8px}.modal-field textarea{min-height:34px;height:34px;padding:7px;font-size:14px}.modal-total{padding:8px;border-radius:12px}.modal-total b{font-size:18px}.modal-actions{margin-top:9px;display:grid;grid-template-columns:1fr 1fr;gap:8px}.modal-actions .small-btn,.modal-actions .ghost-btn{height:36px;width:100%;font-size:13px}.modal-card .icon-btn{width:34px;height:34px;border-radius:10px}}
+@media(max-width:430px){.modal-card{max-height:98dvh;padding:10px}.modal-grid{gap:6px}.modal-field input,.modal-field select{min-height:31px;height:31px;font-size:13px}.modal-field textarea{min-height:31px;height:31px}.modal-field label{font-size:9px}.modal-total{padding:7px}.modal-total b{font-size:16px}.modal-actions{margin-top:7px}.modal-actions .small-btn,.modal-actions .ghost-btn{height:34px;font-size:12px}.card{padding:12px}.metric b{font-size:19px}}
+
+/* Extra compact invoice modal */
+.modal-advanced{display:none;grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.modal-advanced.open{display:grid}
+.modal-toggle{grid-column:1/-1;border:1px solid var(--line);background:transparent;color:var(--muted);height:30px;border-radius:10px;font-weight:900;font-size:12px;cursor:pointer}
+@media(max-width:900px){
+  .modal-backdrop{align-items:center;padding:6px}
+  .modal-card{max-height:94dvh;overflow:hidden;padding:10px;border-radius:18px}
+  .modal-head{margin-bottom:6px}
+  .modal-head h3{font-size:16px}
+  .modal-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .modal-field label{font-size:9px;margin-bottom:2px}
+  .modal-field input,.modal-field select{min-height:30px;height:30px;border-radius:9px;font-size:13px;padding:0 7px}
+  .modal-field textarea{min-height:30px;height:30px;border-radius:9px;font-size:13px;padding:6px 7px}
+  .modal-total{padding:7px;border-radius:11px}
+  .modal-total small{font-size:9px}
+  .modal-total b{font-size:16px}
+  .modal-actions{margin-top:7px;gap:6px}
+  .modal-actions .small-btn,.modal-actions .ghost-btn{height:32px;font-size:12px;border-radius:10px}
+}
+@media(max-width:430px){
+  .modal-card{max-height:92dvh;padding:9px}
+  .modal-grid{gap:5px}
+  .modal-field input,.modal-field select{min-height:28px;height:28px;font-size:12px}
+  .modal-field textarea{min-height:28px;height:28px;font-size:12px}
+  .modal-toggle{height:28px;font-size:11px}
+  .modal-actions .small-btn,.modal-actions .ghost-btn{height:30px}
+}
+
+
+/* Pretty compact mobile invoice modal + visible trend */
+@media(max-width:900px){
+  .modal-backdrop{
+    align-items:center !important;
+    padding:10px !important;
+    background:rgba(15,23,42,.58) !important;
+  }
+  .modal-card{
+    max-height:88dvh !important;
+    overflow:hidden !important;
+    padding:12px !important;
+    border-radius:24px !important;
+    box-shadow:0 28px 70px rgba(15,23,42,.38) !important;
+  }
+  .modal-head{
+    margin-bottom:8px !important;
+    padding-bottom:8px;
+    border-bottom:1px solid var(--line);
+  }
+  .modal-head h3{
+    font-size:17px !important;
+    letter-spacing:.02em;
+  }
+  .modal-head .icon-btn{
+    width:34px !important;
+    height:34px !important;
+  }
+  .modal-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:7px !important;
+  }
+  .modal-field label{
+    font-size:9px !important;
+    margin-bottom:2px !important;
+    letter-spacing:.02em;
+  }
+  .modal-field input,.modal-field select{
+    min-height:30px !important;
+    height:30px !important;
+    border-radius:10px !important;
+    font-size:13px !important;
+    padding:0 8px !important;
+    background:rgba(248,250,252,.92) !important;
+  }
+  [data-theme="dark"] .modal-field input,[data-theme="dark"] .modal-field select{
+    background:#0f172a !important;
+  }
+  .modal-field textarea{
+    min-height:30px !important;
+    height:30px !important;
+    border-radius:10px !important;
+    font-size:12px !important;
+    padding:6px 8px !important;
+  }
+  .modal-total{
+    min-height:45px;
+    padding:8px 10px !important;
+    border-radius:13px !important;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  .modal-total small{
+    font-size:9px !important;
+    margin-bottom:2px !important;
+  }
+  .modal-total b{
+    font-size:17px !important;
+    line-height:1.1;
+  }
+  .modal-toggle{
+    height:30px !important;
+    border-radius:10px !important;
+    background:rgba(37,99,235,.08) !important;
+    color:#2563eb !important;
+  }
+  .modal-actions{
+    margin-top:8px !important;
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:7px !important;
+  }
+  .modal-actions .small-btn,.modal-actions .ghost-btn{
+    height:34px !important;
+    font-size:12px !important;
+    border-radius:12px !important;
+    width:100% !important;
+  }
+  .content-grid{
+    grid-template-columns:1fr !important;
+  }
+  .fake-chart{
+    display:block !important;
+    height:145px !important;
+  }
+  .panel:has(.fake-chart){
+    display:block !important;
+  }
+  .donut{
+    width:150px !important;
+    height:150px !important;
+  }
+  .donut:before{
+    width:82px !important;
+    height:82px !important;
+    font-size:11px !important;
+  }
+}
+@media(max-width:430px){
+  .modal-backdrop{padding:8px !important}
+  .modal-card{
+    max-height:86dvh !important;
+    padding:10px !important;
+    border-radius:22px !important;
+  }
+  .modal-grid{gap:6px !important}
+  .modal-field input,.modal-field select{
+    min-height:28px !important;
+    height:28px !important;
+    font-size:12px !important;
+  }
+  .modal-field label{font-size:8.5px !important}
+  .modal-total{min-height:42px;padding:7px 9px !important}
+  .modal-total b{font-size:15px !important}
+  .modal-actions .small-btn,.modal-actions .ghost-btn{height:31px !important}
+  .fake-chart{height:135px !important}
+}
+
+
+.trend-chart{
+  position:relative;
+  height:180px;
+  border-radius:18px;
+  overflow:hidden;
+  background:
+    linear-gradient(180deg,rgba(37,99,235,.12),rgba(37,99,235,.02)),
+    repeating-linear-gradient(0deg,transparent 0 42px,var(--line) 43px);
+}
+.trend-chart svg{position:absolute;inset:0;width:100%;height:100%}
+.trend-empty{
+  height:180px;
+  display:grid;
+  place-items:center;
+  color:var(--muted);
+  font-weight:900;
+  border-radius:18px;
+  background:var(--bg);
+}
+.trend-label{
+  position:absolute;
+  right:10px;
+  top:8px;
+  z-index:2;
+  font-size:11px;
+  color:var(--muted);
+  font-weight:900;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:4px 8px;
+}
+@media(max-width:900px){
+  .trend-chart,.trend-empty{height:150px!important}
+}
+@media(max-width:430px){
+  .trend-chart,.trend-empty{height:140px!important}
+}
+
+
+.iva-donut-wrap{display:grid;place-items:center;gap:10px}
+.iva-legend{width:100%;display:grid;gap:7px;font-size:12px;font-weight:800;color:var(--muted)}
+.iva-legend div{display:flex;justify-content:space-between;gap:10px}
+.iva-dot{width:10px;height:10px;border-radius:999px;display:inline-block;margin-right:6px}
+
+
+/* Formula info tips */
+.info-btn{
+  border:0;
+  background:rgba(37,99,235,.10);
+  color:#2563eb;
+  width:22px;
+  height:22px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  cursor:pointer;
+  display:inline-grid;
+  place-items:center;
+  margin-left:6px;
+  vertical-align:middle;
+}
+[data-theme="dark"] .info-btn{background:rgba(96,165,250,.18);color:#93c5fd}
+.formula-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:120;
+  background:rgba(15,23,42,.48);
+  backdrop-filter:blur(8px);
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  padding:16px;
+}
+.formula-card{
+  width:min(520px,100%);
+  background:var(--card);
+  color:var(--text);
+  border:1px solid var(--line);
+  border-radius:24px;
+  box-shadow:0 28px 70px rgba(15,23,42,.35);
+  padding:18px;
+}
+.formula-card h3{margin:0 0 12px;font-size:18px}
+.formula-line{
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  padding:9px 0;
+  border-bottom:1px solid var(--line);
+  font-weight:800;
+}
+.formula-line span{color:var(--muted)}
+.formula-result{
+  margin-top:12px;
+  padding:12px;
+  border-radius:16px;
+  background:linear-gradient(135deg,#2563eb,#7c3aed);
+  color:#fff;
+  display:flex;
+  justify-content:space-between;
+  font-weight:900;
+}
+.formula-note{
+  margin-top:10px;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.45;
+  font-weight:700;
+}
+@media(max-width:700px){
+  .formula-backdrop{padding:0;align-items:flex-end}
+  .formula-card{border-radius:24px 24px 0 0;padding:16px}
+  .formula-line{font-size:13px;padding:8px 0}
+  .info-btn{width:20px;height:20px;font-size:11px}
+}
+
+
+/* Mobile beauty upgrade: bigger modal, buttons always visible */
+@media(max-width:900px){
+  body{
+    background:linear-gradient(180deg,#f8fafc 0%,#eef2ff 100%);
+  }
+  .main{
+    padding:12px 12px 84px !important;
+  }
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:30;
+    background:rgba(248,250,252,.82);
+    backdrop-filter:blur(16px);
+    border:1px solid rgba(226,232,240,.75);
+    border-radius:20px;
+    padding:10px;
+    margin-bottom:10px;
+  }
+  [data-theme="dark"] .topbar{
+    background:rgba(15,23,42,.82);
+    border-color:rgba(51,65,85,.8);
+  }
+  .card{
+    border-radius:22px !important;
+    box-shadow:0 16px 38px rgba(15,23,42,.09) !important;
+  }
+  .cards{
+    gap:10px !important;
+  }
+  .metric{
+    min-height:76px;
+  }
+  .metric b{
+    font-size:21px !important;
+  }
+  .tabs{
+    position:sticky;
+    top:76px;
+    z-index:25;
+    background:rgba(248,250,252,.86);
+    backdrop-filter:blur(14px);
+    border-radius:18px;
+    padding:6px;
+    border:1px solid rgba(226,232,240,.7);
+  }
+  [data-theme="dark"] .tabs{
+    background:rgba(15,23,42,.86);
+    border-color:rgba(51,65,85,.8);
+  }
+
+  .modal-backdrop{
+    align-items:center !important;
+    padding:8px !important;
+    background:rgba(15,23,42,.62) !important;
+  }
+  .modal-card{
+    width:min(96vw,520px) !important;
+    height:min(94dvh,760px) !important;
+    max-height:94dvh !important;
+    padding:14px !important;
+    border-radius:28px !important;
+    overflow:hidden !important;
+    display:flex !important;
+    flex-direction:column !important;
+    box-shadow:0 30px 90px rgba(15,23,42,.46) !important;
+  }
+  .modal-head{
+    flex:0 0 auto;
+    margin-bottom:10px !important;
+    padding-bottom:10px !important;
+    border-bottom:1px solid var(--line);
+  }
+  .modal-head h3{
+    font-size:18px !important;
+  }
+  .modal-head .icon-btn{
+    width:38px !important;
+    height:38px !important;
+    border-radius:14px !important;
+  }
+  .modal-grid{
+    flex:1 1 auto;
+    overflow-y:auto;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:9px !important;
+    padding:2px 2px 10px !important;
+  }
+  .modal-grid::-webkit-scrollbar{width:0;height:0}
+  .modal-field label{
+    font-size:10px !important;
+    margin-bottom:3px !important;
+  }
+  .modal-field input,.modal-field select{
+    min-height:36px !important;
+    height:36px !important;
+    border-radius:13px !important;
+    font-size:14px !important;
+    padding:0 10px !important;
+  }
+  .modal-field textarea{
+    min-height:42px !important;
+    height:42px !important;
+    border-radius:13px !important;
+    font-size:13px !important;
+    padding:8px 10px !important;
+  }
+  .modal-total{
+    min-height:54px !important;
+    padding:10px 12px !important;
+    border-radius:16px !important;
+    box-shadow:0 12px 24px rgba(37,99,235,.24);
+  }
+  .modal-total small{
+    font-size:10px !important;
+  }
+  .modal-total b{
+    font-size:20px !important;
+  }
+  .modal-toggle{
+    height:34px !important;
+    border-radius:13px !important;
+    background:rgba(37,99,235,.10) !important;
+    color:#2563eb !important;
+  }
+  .modal-actions{
+    flex:0 0 auto !important;
+    display:grid !important;
+    grid-template-columns:1fr 1.25fr !important;
+    gap:9px !important;
+    margin-top:10px !important;
+    padding-top:10px !important;
+    border-top:1px solid var(--line);
+    background:var(--card);
+  }
+  .modal-actions .small-btn,.modal-actions .ghost-btn{
+    width:100% !important;
+    height:42px !important;
+    border-radius:15px !important;
+    font-size:13px !important;
+    font-weight:900 !important;
+  }
+}
+@media(max-width:430px){
+  .modal-card{
+    width:97vw !important;
+    height:95dvh !important;
+    max-height:95dvh !important;
+    border-radius:26px !important;
+    padding:12px !important;
+  }
+  .modal-grid{
+    gap:7px !important;
+  }
+  .modal-field input,.modal-field select{
+    min-height:34px !important;
+    height:34px !important;
+    font-size:13px !important;
+  }
+  .modal-actions .small-btn,.modal-actions .ghost-btn{
+    height:40px !important;
+  }
+}
+
+
+/* V4 mobile dashboard: one-screen KPI + re-login friendly layout */
+@media(max-width:900px){
+  .dash-mobile .cards{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:8px !important;
+    margin:8px 0 !important;
+  }
+  .dash-mobile .card.metric{
+    min-height:74px !important;
+    padding:10px !important;
+    border-radius:18px !important;
+    gap:8px !important;
+  }
+  .dash-mobile .metric-icon{
+    width:34px !important;
+    height:34px !important;
+    flex:0 0 34px !important;
+    border-radius:12px !important;
+  }
+  .dash-mobile .metric-icon span{
+    font-size:20px !important;
+  }
+  .dash-mobile .metric small{
+    font-size:10px !important;
+    line-height:1.1 !important;
+  }
+  .dash-mobile .metric b{
+    font-size:18px !important;
+    line-height:1.08 !important;
+    word-break:break-word;
+  }
+  .dash-mobile .info-btn{
+    width:17px !important;
+    height:17px !important;
+    font-size:10px !important;
+    margin-left:3px !important;
+  }
+  .dash-mobile .tabs{
+    top:66px !important;
+    display:grid !important;
+    grid-template-columns:repeat(4,1fr) !important;
+    gap:6px !important;
+    margin-bottom:8px !important;
+  }
+  .dash-mobile .tabs button{
+    min-width:0 !important;
+    height:38px !important;
+    padding:0 4px !important;
+    font-size:13px !important;
+    border-radius:14px !important;
+  }
+  .dash-mobile .content-grid{
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    gap:10px !important;
+  }
+  .dash-mobile .content-grid .card{
+    padding:12px !important;
+    border-radius:18px !important;
+  }
+  .dash-mobile .trend-chart,.dash-mobile .trend-empty{
+    height:112px !important;
+    border-radius:14px !important;
+  }
+  .dash-mobile .iva-donut-wrap{
+    grid-template-columns:96px 1fr;
+    place-items:center;
+    gap:8px;
+  }
+  .dash-mobile .donut{
+    width:96px !important;
+    height:96px !important;
+  }
+  .dash-mobile .donut:before{
+    width:58px !important;
+    height:58px !important;
+    font-size:9px !important;
+  }
+  .dash-mobile .iva-legend{
+    font-size:10px !important;
+    gap:4px !important;
+  }
+  .dash-mobile .iva-dot{
+    width:8px !important;
+    height:8px !important;
+  }
+  .dash-mobile .dashboard-details{
+    display:none;
+  }
+}
+@media(max-width:430px){
+  .main{
+    padding:8px 9px 76px !important;
+  }
+  .dash-mobile .card.metric{
+    min-height:68px !important;
+    padding:9px !important;
+  }
+  .dash-mobile .metric-icon{
+    width:30px !important;
+    height:30px !important;
+    flex-basis:30px !important;
+  }
+  .dash-mobile .metric-icon span{
+    font-size:18px !important;
+  }
+  .dash-mobile .metric b{
+    font-size:16px !important;
+  }
+  .dash-mobile .metric small{
+    font-size:9px !important;
+  }
+  .dash-mobile .tabs button{
+    height:34px !important;
+    font-size:12px !important;
+  }
+}
+
+
+/* Fattura mobile: all fields visible, 26-key text inputs, clean IVA pie */
+.modal-advanced{display:grid !important;grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.modal-toggle{display:none !important}
+.donut:before{
+  padding:0 8px;
+  box-sizing:border-box;
+  font-size:12px !important;
+  line-height:1.15 !important;
+  overflow:hidden;
+}
+@media(max-width:900px){
+  .modal-card{
+    width:min(96vw,560px) !important;
+    height:auto !important;
+    max-height:94dvh !important;
+    overflow:auto !important;
+    padding:14px !important;
+    border-radius:26px !important;
+  }
+  .modal-grid{
+    overflow:visible !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:9px !important;
+  }
+  .modal-field input,.modal-field select,.modal-field textarea{
+    font-size:16px !important;
+  }
+  .modal-field input,.modal-field select{
+    height:36px !important;
+    min-height:36px !important;
+  }
+  .modal-field textarea{
+    height:38px !important;
+    min-height:38px !important;
+  }
+  .modal-actions{
+    position:sticky !important;
+    bottom:0;
+    background:var(--card);
+    padding-top:10px !important;
+  }
+  .dash-mobile .donut:before,.donut:before{
+    width:56px !important;
+    height:56px !important;
+    font-size:10px !important;
+    white-space:normal !important;
+  }
+  .iva-donut-wrap{
+    grid-template-columns:100px 1fr !important;
+  }
+}
+@media(max-width:430px){
+  .modal-card{max-height:94dvh !important;padding:12px !important}
+  .modal-grid{gap:7px !important}
+  .modal-field input,.modal-field select{height:34px !important;min-height:34px !important}
+  .modal-field textarea{height:36px !important;min-height:36px !important}
+}
+
+
+/* Fixes: dark mode, mobile menu overlap, monthly export placement */
+[data-theme="dark"]{
+  --bg:#0f172a;
+  --card:#111827;
+  --text:#e5e7eb;
+  --muted:#94a3b8;
+  --line:#334155;
+  --nav:#020617;
+  --nav2:#0f172a;
+  --shadow:0 14px 36px rgba(0,0,0,.35);
+}
+[data-theme="dark"] body{background:var(--bg);color:var(--text)}
+[data-theme="dark"] .login-card{background:rgba(17,24,39,.94);border-color:#334155}
+[data-theme="dark"] .input-wrap,[data-theme="dark"] .ghost-btn,[data-theme="dark"] .icon-btn,[data-theme="dark"] .tabs button,[data-theme="dark"] .lang-login{background:var(--card);border-color:var(--line);color:var(--text)}
+[data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea{background:var(--card);color:var(--text)}
+@media(max-width:900px){
+  .sidebar{z-index:260 !important;box-shadow:24px 0 70px rgba(15,23,42,.35)}
+  .sidebar.open{transform:translateX(0) !important}
+  .topbar{z-index:120 !important}
+  .mobile-menu{z-index:270 !important;position:relative}
+  .side-brand{padding-top:52px}
+  .nav button{height:44px}
+  .monthly-filter{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+  .monthly-filter select,.monthly-filter input{height:40px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:13px;padding:0 12px;font-weight:900}
+  .daily-export-toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+  .daily-export-toolbar .ghost-btn{width:auto;min-width:150px}
+}
+
+
+.month-picker{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.month-picker input,.month-picker select{
+  height:40px;
+  border:1px solid var(--line);
+  background:var(--card);
+  color:var(--text);
+  border-radius:13px;
+  padding:0 12px;
+  font-weight:900;
+}
+.month-picker input{max-width:105px}
+.danger-btn{
+  height:40px;
+  border-radius:13px;
+  border:1px solid #fecaca;
+  background:#fff1f2;
+  color:#dc2626;
+  padding:0 14px;
+  font-weight:900;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  cursor:pointer;
+}
+[data-theme="dark"] .danger-btn{background:rgba(220,38,38,.12);border-color:rgba(248,113,113,.35);color:#f87171}
+@media(max-width:900px){
+  .month-picker{width:100%;display:grid;grid-template-columns:.85fr 1.15fr;gap:8px}
+  .month-picker input,.month-picker select{width:100%;max-width:none}
+  .chiusura-actions{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}
+  .chiusura-actions .small-btn,.chiusura-actions .danger-btn{width:100%}
+}
+
+</style>
+</head>
+<body>
+<section id="loginPage" class="login-page"><div class="login-card"><button class="lang-login" id="loginLangBtn" onclick="toggleLang()">IT</button><div class="brand"><div class="logo"><svg viewBox="0 0 64 64" class="sun-logo"><circle cx="32" cy="32" r="11" fill="none" stroke="#fff" stroke-width="4"/><g stroke="#fff" stroke-width="4" stroke-linecap="round"><line x1="32" y1="8" x2="32" y2="15"/><line x1="32" y1="49" x2="32" y2="56"/><line x1="8" y1="32" x2="15" y2="32"/><line x1="49" y1="32" x2="56" y2="32"/><line x1="15" y1="15" x2="20" y2="20"/><line x1="44" y1="44" x2="49" y2="49"/><line x1="44" y1="20" x2="49" y2="15"/><line x1="15" y1="49" x2="20" y2="44"/></g></svg></div><h1>VAT MANAGEMENT</h1><p data-t="sub">营业额 · 发票 · IVA</p></div><div class="field"><label data-t="account">账号</label><div class="input-wrap"><span class="material-symbols-rounded">business</span><select id="loginAccount"><option>EMP</option><option>SUNSHOP</option><option>CASAISSIMA</option></select></div></div><div class="field"><label data-t="password">密码</label><div class="input-wrap"><span class="material-symbols-rounded">lock</span><input id="loginPassword" type="password"></div></div><button class="primary-btn" onclick="login()" data-t="login">登录</button><div id="loginError" style="color:#dc2626;text-align:center;font-weight:800;margin-top:10px"></div></div></section>
+<section id="appPage" class="app hidden"><aside id="sidebar" class="sidebar"><div class="side-brand"><div class="logo" id="sideLogo"><svg viewBox="0 0 64 64" class="sun-logo"><circle cx="32" cy="32" r="11" fill="none" stroke="#fff" stroke-width="4"/><g stroke="#fff" stroke-width="4" stroke-linecap="round"><line x1="32" y1="8" x2="32" y2="15"/><line x1="32" y1="49" x2="32" y2="56"/><line x1="8" y1="32" x2="15" y2="32"/><line x1="49" y1="32" x2="56" y2="32"/><line x1="15" y1="15" x2="20" y2="20"/><line x1="44" y1="44" x2="49" y2="49"/><line x1="44" y1="20" x2="49" y2="15"/><line x1="15" y1="49" x2="20" y2="44"/></g></svg></div><div><strong id="brandTitle">VAT</strong><br><span id="brandSub">增值税管理</span></div></div><nav class="nav" id="nav"></nav><div class="side-user"><span class="material-symbols-rounded">account_circle</span><div><b id="sideAccount">EMP</b><br><span id="adminLabel">管理员</span></div></div></aside><main class="main"><div class="topbar"><button class="icon-btn mobile-menu" onclick="toggleSidebar()"><span class="material-symbols-rounded">menu</span></button><div class="title-row"><h2 id="pageTitle">总览</h2><p id="accountSub">EMP</p></div><div class="top-actions"><div class="date-pill"><span class="material-symbols-rounded">calendar_month</span><span id="todayText"></span></div><button class="icon-btn lang-btn" id="topLangBtn" onclick="toggleLang()">IT</button><button class="icon-btn" onclick="toggleTheme()"><span class="material-symbols-rounded">dark_mode</span></button><button class="icon-btn" onclick="logout()"><span class="material-symbols-rounded">logout</span></button></div></div><div id="view"></div></main></section>
+<script>
+const firebaseConfig={apiKey:"AIzaSyA5wo62VKzPn0V2H-po-1RSXgqS9FCCEgk",authDomain:"cmfinance26-14668.firebaseapp.com",databaseURL:"https://cmfinance26-14668-default-rtdb.europe-west1.firebasedatabase.app",projectId:"cmfinance26-14668",storageBucket:"cmfinance26-14668.firebasestorage.app",messagingSenderId:"40879571268",appId:"1:40879571268:web:e42a32daee1522412f1711",measurementId:"G-Y6052HLV4R"};
+firebase.initializeApp(firebaseConfig);const db=firebase.database();
+const PASS='Admin2026',accounts={EMP:2,SUNSHOP:1,CASAISSIMA:3};let currentLang=localStorage.vatLang||'zh';let state={account:null,page:'Dashboard',period:'quarter',chiusuraDate:null,fatturaDate:null,selectedMonth:null,selectedQuarter:null,data:{chiusure:{},fatture:{},iva:{}}};let appCurrentDate=todayISO(),dateRefreshTimer=null;
+const $=id=>document.getElementById(id),num=v=>{
+  let s=String(v??'').trim().replace(/，/g,',');
+  if(!s)return 0;
+  s=s.replace(/\s/g,'');
+  const lastComma=s.lastIndexOf(','),lastDot=s.lastIndexOf('.');
+  const sep=Math.max(lastComma,lastDot);
+  if(sep>=0){
+    const intPart=s.slice(0,sep).replace(/[.,]/g,'');
+    const decPart=s.slice(sep+1).replace(/[.,]/g,'');
+    s=intPart+'.'+decPart;
+  }
+  s=s.replace(/[^0-9.-]/g,'');
+  return Number(s)||0;
+},money=n=>Number(n||0).toLocaleString('it-IT',{style:'currency',currency:'EUR'});
+const it={账号:'Account',密码:'Password',登录:'Accedi',管理员:'Amministratore','增值税管理':'Gestione IVA','营业额 · 发票 · IVA':'Chiusure · Fatture · IVA',总览:'Dashboard',营业额:'Chiusure',发票:'Fatture',供应商:'Fornitori',月记录:'Registro mensile',季度记录:'Registro trimestrale',报表:'Report',本季度:'Trimestre',本月:'Mese',本日:'Giorno',本年:'Anno',全部:'Tutto',手动加入营业额:'Inserimento chiusura',待加入:'Da aggiungere',已加入到总览:'Aggiunto',加入营业额:'Aggiungi chiusura',查看总览:'Dashboard',总营业额:'Totale chiusure',总营业额IVA:'IVA vendite totale',最近营业额记录:'Ultime chiusure',日期:'Data',状态:'Stato',编辑:'Modifica',发票录入:'Inserimento fatture',新增发票:'Nuova fattura',保存发票:'Salva fattura',取消:'Annulla',关闭:'Chiudi',导出Excel:'Esporta Excel',当天营业额:'Chiusura giorno',当天营业额IVA:'IVA vendite giorno',当天发票IVA:'IVA fatture giorno',当天要付多少IVA:'IVA da pagare oggi',当天缺多少发票:'Fatture mancanti oggi',当天缺多少未税金额:'Imponibile mancante oggi',当天发票金额:'Totale fatture oggi',当天发票:'Fatture giorno',全部发票:'Tutte le fatture',发票明细:'Dettaglio fatture',营业额IVA:'IVA vendite',发票IVA:'IVA fatture',要付多少IVA:'IVA da pagare',缺多少发票:'Fatture mancanti',缺多少未税金额:'Imponibile mancante',发票金额:'Totale fatture',含IVA总金额:'Totale con IVA',未税金额:'Imponibile',税额:'Imposta IVA',总金额:'Importo totale',发票号:'Numero fattura',开票日期:'Data emissione',收到日期:'Data ricezione',类别:'Categoria',付款方式:'Metodo pagamento','IVA税率%':'Aliquota IVA %',备注:'Note',已登记:'Registrata',待检查:'Da controllare',已付款:'Pagata',暂无数据:'Nessun dato',查看全部:'Vedi tutto',税率:'Aliquota',当前范围:'Periodo',公式:'Formula',当前范围发票:'Fatture del periodo',每天记录:'Registro giornaliero',本月发票:'Fatture mese',三个月记录:'Tre mesi',本季度发票:'Fatture trimestre',月份:'Mese',季度:'Trimestre',查看月记录:'Vedi mese',查看:'Vedi',发票数:'N. fatture',发票数量:'Numero fatture',总计:'Totale',导出每天记录:'Esporta registro giornaliero',搜索:'Cerca',搜索日期:'Cerca data',导出季度:'Esporta trimestre',导出本月发票:'Esporta fatture mese',选择季度:'Seleziona trimestre',第一季度:'1° trimestre',第二季度:'2° trimestre',第三季度:'3° trimestre',第四季度:'4° trimestre','删除':'Elimina','删除当天营业额':'Elimina chiusura del giorno','确定删除这天的营业额吗？':'Eliminare la chiusura di questo giorno?','选择月份':'Seleziona mese','年份':'Anno','一月':'Gennaio','二月':'Febbraio','三月':'Marzo','四月':'Aprile','五月':'Maggio','六月':'Giugno','七月':'Luglio','八月':'Agosto','九月':'Settembre','十月':'Ottobre','十一月':'Novembre','十二月':'Dicembre'};
+function tx(s){return currentLang==='it'?(it[s]||s):s}function updateLangButtons(){const l=currentLang==='it'?'中文':'IT';['loginLangBtn','topLangBtn'].forEach(id=>{$(id)&&($(id).textContent=l)})}function toggleLang(){currentLang=currentLang==='it'?'zh':'it';localStorage.vatLang=currentLang;location.reload()}
+function localDateISO(date=new Date()){const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0');return `${y}-${m}-${d}`}function todayISO(){return localDateISO()}function monthKey(d){return(d||todayISO()).slice(0,7)}function quarterKey(d=todayISO()){const x=new Date(d);return x.getFullYear()+'-Q'+(Math.floor(x.getMonth()/3)+1)}function smartYear(y){
+  y=String(y||'').trim();
+  if(y.length===2)return '20'+y;
+  if(y.length===1)return '200'+y;
+  return y;
+}
+function validDateParts(y,m,d){
+  y=Number(y);m=Number(m);d=Number(d);
+  if(!y||!m||!d||m<1||m>12||d<1||d>31)return false;
+  const x=new Date(y,m-1,d);
+  return x.getFullYear()===y&&x.getMonth()===m-1&&x.getDate()===d;
+}
+function normalizeDateValue(v){
+  v=String(v||'').trim().replace(/[年月.\\-]/g,'/').replace(/日/g,'');
+  if(!v)return todayISO();
+  let m=v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{1,4})$/);
+  if(m){
+    const d=String(m[1]).padStart(2,'0'),mo=String(m[2]).padStart(2,'0'),y=smartYear(m[3]);
+    if(validDateParts(y,mo,d))return `${y}-${mo}-${d}`;
+  }
+  m=v.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+  if(m){
+    const y=m[1],mo=String(m[2]).padStart(2,'0'),d=String(m[3]).padStart(2,'0');
+    if(validDateParts(y,mo,d))return `${y}-${mo}-${d}`;
+  }
+  const raw=v.replace(/\D/g,'');
+  if(/^\d{6}$/.test(raw)){
+    const d=raw.slice(0,2),mo=raw.slice(2,4),y=smartYear(raw.slice(4,6));
+    if(validDateParts(y,mo,d))return `${y}-${mo}-${d}`;
+  }
+  if(/^\d{8}$/.test(raw)){
+    // supports both 20260702 and 02072026
+    let y=raw.slice(0,4),mo=raw.slice(4,6),d=raw.slice(6,8);
+    if(validDateParts(y,mo,d))return `${y}-${mo}-${d}`;
+    d=raw.slice(0,2);mo=raw.slice(2,4);y=raw.slice(4,8);
+    if(validDateParts(y,mo,d))return `${y}-${mo}-${d}`;
+  }
+  return v;
+}
+function toSlashDate(v){
+  v=String(v||'').trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(v))return `${v.slice(8,10)}/${v.slice(5,7)}/${v.slice(0,4)}`;
+  return v.replace(/-/g,'/');
+}
+function autoSlashDateInput(el){
+  let raw=String(el.value||'').replace(/\D/g,'').slice(0,8);
+  if(raw.length>4)el.value=raw.slice(0,2)+'/'+raw.slice(2,4)+'/'+raw.slice(4);
+  else if(raw.length>2)el.value=raw.slice(0,2)+'/'+raw.slice(2);
+  else el.value=raw;
+}
+function updateTodayText(){$('todayText')&&($('todayText').textContent=new Date().toLocaleDateString('it-IT',{day:'2-digit',month:'long',year:'numeric'}))}function refreshDateIfNeeded(){const now=todayISO();if(now!==appCurrentDate){const old=appCurrentDate;appCurrentDate=now;updateTodayText();if(!state.chiusuraDate||state.chiusuraDate===old)state.chiusuraDate=now;if(!state.fatturaDate||state.fatturaDate===old)state.fatturaDate=now;render()}}function startAutoDateRefresh(){clearInterval(dateRefreshTimer);dateRefreshTimer=setInterval(refreshDateIfNeeded,30000);window.addEventListener('focus',refreshDateIfNeeded);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshDateIfNeeded()})}
+let activeDbRef=null,appUnlocked=false;
+const SESSION_MS=30*60*1000;
+function rememberSession(acc){localStorage.vatAccount=acc;localStorage.vatAuthUntil=String(Date.now()+SESSION_MS)}
+function sessionValid(){return localStorage.vatAccount&&Number(localStorage.vatAuthUntil||0)>Date.now()}
+function extendSession(){if(appUnlocked&&state.account)rememberSession(state.account)}
+function login(){const acc=$('loginAccount').value,p=$('loginPassword').value;if(p!==PASS){$('loginError').textContent=currentLang==='it'?'Password errata':'密码错误';return}state.account=acc;appUnlocked=true;rememberSession(acc);$('loginPassword').value='';$('loginError').textContent='';$('loginPage').classList.add('hidden');$('appPage').classList.remove('hidden');initApp()}
+function lockApp(force=false){if(!force&&appUnlocked&&state.account){rememberSession(state.account);return}appUnlocked=false;if(activeDbRef){activeDbRef.off();activeDbRef=null}state.account=null;state.data={chiusure:{},fatture:{},iva:{}};localStorage.removeItem('vatAccount');localStorage.removeItem('vatAuthUntil');$('appPage').classList.add('hidden');$('loginPage').classList.remove('hidden');$('loginPassword').value='';updateLangButtons()}
+function logout(){lockApp(true)}
+function restoreSession(){if(sessionValid()&&accounts[localStorage.vatAccount]){state.account=localStorage.vatAccount;appUnlocked=true;$('loginPage').classList.add('hidden');$('appPage').classList.remove('hidden');initApp();return true}localStorage.removeItem('vatAccount');localStorage.removeItem('vatAuthUntil');return false}
+function checkSession(){if(appUnlocked&&Number(localStorage.vatAuthUntil||0)<=Date.now())lockApp(true)}
+function initApp(){applyTheme();renderNav();$('sideAccount').textContent=state.account;$('accountSub').textContent=state.account;$('brandTitle').textContent=state.account;$('adminLabel').textContent=tx('管理员');updateTodayText();startAutoDateRefresh();state.chiusuraDate=state.chiusuraDate||todayISO();state.fatturaDate=state.fatturaDate||todayISO();listenData()}
+function toggleSidebar(){$('sidebar').classList.toggle('open')}
+function applyTheme(){document.documentElement.setAttribute('data-theme',localStorage.vatTheme||'light')}
+function toggleTheme(){localStorage.vatTheme=(document.documentElement.getAttribute('data-theme')==='dark')?'light':'dark';applyTheme()}
+function listenData(){if(activeDbRef)activeDbRef.off();activeDbRef=db.ref('vatManagement/'+state.account);activeDbRef.on('value',snap=>{if(!appUnlocked||!state.account)return;state.data=snap.val()||{chiusure:{},fatture:{},iva:{}};const el=document.activeElement,editing=el&&['INPUT','TEXTAREA','SELECT'].includes(el.tagName);if(!editing)render()})}
+function save(path,val){return db.ref('vatManagement/'+state.account+'/'+path).set(val)}
+const menus=[['Dashboard','dashboard'],['Chiusure','point_of_sale'],['Fatture','receipt_long'],['Fornitori','warehouse'],['IVA','percent'],['Monthly','calendar_month'],['Quarterly','date_range'],['Report','analytics']],labels={Dashboard:'总览',Chiusure:'营业额',Fatture:'发票',Fornitori:'供应商',IVA:'IVA',Monthly:'月记录',Quarterly:'季度记录',Report:'报表'};function renderNav(){$('nav').innerHTML=menus.map(([m,ic])=>`<button class="${state.page===m?'active':''}" onclick="state.page='${m}';renderNav();render();toggleSidebar()"><span class="material-symbols-rounded">${ic}</span>${tx(labels[m])}</button>`).join('')}function render(){$('pageTitle').textContent=tx(labels[state.page]);const v=$('view');if(state.page==='Dashboard')v.innerHTML=dashboardHTML();if(state.page==='Chiusure')v.innerHTML=chiusureHTML();if(state.page==='Fatture')v.innerHTML=fattureHTML();if(state.page==='Fornitori')v.innerHTML=fornitoriHTML();if(state.page==='IVA')v.innerHTML=ivaHTML();if(state.page==='Monthly')v.innerHTML=monthlyHTML();if(state.page==='Quarterly')v.innerHTML=quarterlyHTML();if(state.page==='Report')v.innerHTML=reportHTML()}
+function fattureList(){return Object.entries(state.data.fatture||{}).map(([id,x])=>({id,...x})).sort((a,b)=>(b.data||'').localeCompare(a.data||''))}function inPeriod(date,p=state.period){if(!date)return false;if(p==='day')return date===todayISO();if(p==='month')return monthKey(date)===monthKey();if(p==='quarter'){const a=new Date(date),b=new Date();return a.getFullYear()===b.getFullYear()&&Math.floor(a.getMonth()/3)===Math.floor(b.getMonth()/3)}if(p==='year')return new Date(date).getFullYear()===new Date().getFullYear();return true}function periodName(p=state.period){return tx(p==='quarter'?'本季度':p==='month'?'本月':p==='day'?'本日':p==='year'?'本年':'全部')}function filteredFatture(p='month'){return fattureList().filter(x=>p==='all'||inPeriod(x.data,p))}function totalChiusure(p='month'){return Object.values(state.data.chiusure||{}).filter(x=>p==='all'||inPeriod(x.data,p)).reduce((s,x)=>s+num(x.totale),0)}function totalSalesIva(p='month'){return Object.values(state.data.chiusure||{}).filter(x=>p==='all'||inPeriod(x.data,p)).reduce((s,x)=>s+num(x.ivaVendite),0)}function fattureSummary(rows){return rows.reduce((a,x)=>{a.count++;a.imponibile+=num(x.imponibile);a.imposta+=num(x.imposta);a.totale+=num(x.totale);return a},{count:0,imponibile:0,imposta:0,totale:0})}function calcSummary(p=state.period){const rows=filteredFatture(p),f=fattureSummary(rows),salesIva=totalSalesIva(p),due=Math.max(0,salesIva-f.imposta),rate=num(state.data.ivaConfig?.aliquota)||22,needImp=rate?due/(rate/100):0;return{rows,...f,rangeChiusura:totalChiusure(p),salesIva,fattureIva:f.imposta,gap:due,needImp,needTot:needImp*(1+rate/100),rate,totalAll:totalChiusure('all')}}function chiusuraByDate(d=state.fatturaDate||todayISO()){return(state.data.chiusure||{})[d]||{data:d,values:[],ivaValues:[],totale:0,ivaVendite:0}}function fattureByDate(d=state.fatturaDate||todayISO()){return fattureList().filter(x=>x.data===d)}function dateInput(id,val,onchange){return`<input class="date-edit" id="${id}" type="text" placeholder="DD/MM/YY" value="${toSlashDate(val||todayISO())}" oninput="autoSlashDateInput(this)" onblur="const d=normalizeDateValue(this.value);this.value=toSlashDate(d);${onchange}(d)">`}function amountInputAttrs(extra=''){return `type="text" inputmode="decimal" pattern="[0-9.,，]*" ${extra}`}function statusText(t){return tx(t)}
+function tabs(){return`<div class="tabs"><button class="${state.period==='quarter'?'active':''}" onclick="state.period='quarter';render()">${tx('本季度')}</button><button class="${state.period==='month'?'active':''}" onclick="state.period='month';render()">${tx('本月')}</button><button class="${state.period==='day'?'active':''}" onclick="state.period='day';render()">${tx('本日')}</button><button class="${state.period==='year'?'active':''}" onclick="state.period='year';render()">${tx('本年')}</button></div>`}function metric(c,ic,a,b,d=''){
+  const canInfo=['营业额','营业额IVA','发票IVA','要付多少IVA','缺多少发票','缺多少未税金额','发票金额'].includes(a);
+  return`<div class="card metric"><div class="metric-icon ${c}"><span class="material-symbols-rounded">${ic}</span></div><div><small>${tx(a)}${canInfo?`<button class="info-btn" onclick="showCalcInfo('${a}')" type="button">i</button>`:''}</small><b>${b}</b><small>${d}</small></div></div>`
+}function summaryCards(s,sub=periodName()){return`<div class="grid cards">${metric('blue','point_of_sale','营业额',money(s.rangeChiusura),sub)}${metric('purple','percent','营业额IVA',money(s.salesIva),'')}${metric('green','receipt','发票IVA',money(s.fattureIva),'')}${metric('orange','payments','要付多少IVA',money(s.gap),'')}</div><div class="grid cards">${metric(s.needTot>0?'orange':'green','request_quote','缺多少发票',money(s.needTot),'')}${metric('blue','calculate','缺多少未税金额',money(s.needImp),'')}${metric('green','folder_open','发票金额',money(s.totale),'')}${metric(s.gap>0?'orange':'green','task_alt','状态',s.gap>0?tx('还要付IVA'):tx('IVA已平'),s.gap>0?money(s.gap):'')}</div>`}
+
+
+function showCalcInfo(kind){
+  const s=calcSummary();
+  const rate=num(state.data.ivaConfig?.aliquota)||22;
+  const data={
+    '营业额':[
+      [tx('计算'), 'Chiusura 1 + Chiusura 2 + ...'],
+      [tx('当前范围'), periodName()],
+      [tx('总营业额'), money(s.rangeChiusura)]
+    ],
+    '营业额IVA':[
+      [tx('计算'), 'IVA 1 + IVA 2 + ...'],
+      [tx('说明'), currentLang==='it'?'Inserita manualmente per ogni chiusura':'每个 Chiusura 的 IVA 手动输入后相加'],
+      [tx('营业额IVA'), money(s.salesIva)]
+    ],
+    '发票IVA':[
+      [tx('计算'), 'Imposta 1 + Imposta 2 + ...'],
+      [tx('发票数量'), String(s.count||s.rows?.length||0)],
+      [tx('发票IVA'), money(s.fattureIva)]
+    ],
+    '要付多少IVA':[
+      [tx('营业额IVA'), money(s.salesIva)],
+      ['－ '+tx('发票IVA'), money(s.fattureIva)],
+      ['= '+tx('要付多少IVA'), money(s.gap)]
+    ],
+    '缺多少发票':[
+      [tx('要付多少IVA'), money(s.gap)],
+      ['÷ IVA '+rate+'%', money(s.needImp)],
+      ['× (1 + IVA%)', money(s.needTot)]
+    ],
+    '缺多少未税金额':[
+      [tx('要付多少IVA'), money(s.gap)],
+      ['÷ IVA '+rate+'%', money(s.needImp)],
+      [tx('缺多少未税金额'), money(s.needImp)]
+    ],
+    '发票金额':[
+      [tx('计算'), 'Imponibile + Imposta'],
+      [tx('未税金额'), money(s.imponibile)],
+      [tx('税额'), money(s.imposta)],
+      [tx('发票金额'), money(s.totale)]
+    ]
+  };
+  const rows=data[kind]||[];
+  const title=tx(kind);
+  const result=rows[rows.length-1]||['', ''];
+  const note=currentLang==='it'
+    ? 'Questa scheda mostra come viene calcolato l’importo nel periodo selezionato.'
+    : '这里显示的是当前选择范围里的计算方式，例如本日、本月、本季度或本年。';
+  closeCalcInfo();
+  const wrap=document.createElement('div');
+  wrap.id='calcInfo';
+  wrap.className='formula-backdrop';
+  wrap.onclick=e=>{if(e.target.id==='calcInfo')closeCalcInfo()};
+  wrap.innerHTML=`<div class="formula-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <h3>${title}</h3>
+      <button class="icon-btn" onclick="closeCalcInfo()"><span class="material-symbols-rounded">close</span></button>
+    </div>
+    ${rows.map(r=>`<div class="formula-line"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('')}
+    <div class="formula-result"><span>${result[0]}</span><b>${result[1]}</b></div>
+    <div class="formula-note">${note}</div>
+  </div>`;
+  document.body.appendChild(wrap);
+}
+function closeCalcInfo(){const el=$('calcInfo');if(el)el.remove()}
+
+function trendData(period=state.period){
+  const ch=Object.values(state.data.chiusure||{})
+    .filter(x=>x&&x.data&&inPeriod(x.data,period))
+    .sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+  return ch.map(x=>({date:x.data,total:num(x.totale)}));
+}
+function trendChartHTML(period=state.period){
+  const data=trendData(period);
+  if(!data.length)return `<div class="trend-empty">${tx('暂无数据')}</div>`;
+  const w=700,h=180,pad=26;
+  const max=Math.max(...data.map(x=>x.total),1);
+  const min=Math.min(...data.map(x=>x.total),0);
+  const range=Math.max(max-min,1);
+  const pts=data.map((d,i)=>{
+    const x=data.length===1?w/2:pad+i*(w-2*pad)/(data.length-1);
+    const y=h-pad-((d.total-min)/range)*(h-2*pad);
+    return {x,y,...d};
+  });
+  const line=pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  const area=`${line} ${pts[pts.length-1].x.toFixed(1)},${h-pad} ${pts[0].x.toFixed(1)},${h-pad}`;
+  const dots=pts.map(p=>`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4.2" fill="#2563eb" stroke="#fff" stroke-width="2"><title>${p.date} · ${money(p.total)}</title></circle>`).join('');
+  const first=data[0].date.slice(5),last=data[data.length-1].date.slice(5);
+  return `<div class="trend-chart"><span class="trend-label">${first}${first!==last?' → '+last:''}</span><svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <defs><linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2563eb" stop-opacity=".26"/><stop offset="100%" stop-color="#2563eb" stop-opacity="0"/></linearGradient></defs>
+    <polygon points="${area}" fill="url(#trendFill)"></polygon>
+    <polyline points="${line}" fill="none" stroke="#2563eb" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+    ${dots}
+  </svg></div>`;
+}
+
+
+function ivaPieHTML(s){
+  const sales=num(s.salesIva),fatt=num(s.fattureIva),due=num(s.gap);
+  const total=Math.max(sales, fatt+due, 1);
+  const fattPct=Math.min(100, Math.max(0, fatt/total*100));
+  const duePct=Math.min(100, Math.max(0, due/total*100));
+  const bg=sales<=0&&fatt<=0&&due<=0
+    ? 'conic-gradient(#e5e7eb 0 100%)'
+    : `conic-gradient(#16a34a 0 ${fattPct}%, #f97316 ${fattPct}% ${Math.min(100,fattPct+duePct)}%, #e5e7eb ${Math.min(100,fattPct+duePct)}% 100%)`;
+  return `<div class="iva-donut-wrap">
+    <div class="donut" style="background:${bg}" data-label="${money(due)}"></div>
+    <div class="iva-legend">
+      <div><span><i class="iva-dot" style="background:#16a34a"></i>${tx('发票IVA')}</span><b>${money(fatt)}</b></div>
+      <div><span><i class="iva-dot" style="background:#f97316"></i>${tx('要付多少IVA')}</span><b>${money(due)}</b></div>
+      <div><span><i class="iva-dot" style="background:#e5e7eb"></i>${tx('营业额IVA')}</span><b>${money(sales)}</b></div>
+    </div>
+  </div>`;
+}
+
+function dashboardHTML(){const s=calcSummary();return`<div class="dash-mobile">${tabs()}${summaryCards(s)}<div class="grid content-grid"><div class="card"><h3>${tx('营业额走势')}</h3>${trendChartHTML(state.period)}</div><div class="card"><h3>IVA</h3>${ivaPieHTML(s)}</div></div><div class="card dashboard-details" style="margin-top:16px"><div class="toolbar"><h3>${tx('发票明细')}</h3><button class="ghost-btn" onclick="state.page='Fatture';renderNav();render()">${tx('查看全部')}</button></div><div style="color:var(--muted);font-size:12px;font-weight:800;margin-bottom:8px">${tx('未税金额')} / ${tx('税额')} / ${tx('总金额')} ${currentLang==='it'?'aggiornati automaticamente':'会自动联动'}</div>${miniTable(s.rows.slice(0,8))}</div></div>`}
+function chiusureHTML(){const n=accounts[state.account],d=state.chiusuraDate||todayISO(),cur=chiusuraByDate(d),vals=Array.from({length:n},(_,i)=>cur.values?.[i]||''),ivaVals=Array.from({length:n},(_,i)=>cur.ivaValues?.[i]||''),all=Object.values(state.data.chiusure||{}).sort((a,b)=>(b.data||'').localeCompare(a.data||'')).slice(0,10),hasCur=!!(state.data.chiusure||{})[d];return`<div class="card"><div class="toolbar"><h3>${tx('手动加入营业额')}</h3><div class="input-wrap" style="max-width:220px;background:var(--bg)"><span class="material-symbols-rounded">calendar_month</span>${dateInput('chiusuraDateInput',d,'changeChiusuraDate')}</div></div><div class="form-grid">${Array.from({length:n},(_,i)=>`<div class="input-card"><label>Chiusura ${i+1}</label><input id="chiusuraInput${i}" type="text" inputmode="decimal" pattern="[0-9.,，]*" value="${vals[i]}" oninput="previewChiusuraTotal()"><label style="margin-top:10px">IVA ${i+1}</label><input id="chiusuraIvaInput${i}" type="text" inputmode="decimal" pattern="[0-9.,，]*" value="${ivaVals[i]}" oninput="previewChiusuraTotal()"></div>`).join('')}</div><div class="total-box" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><small>${tx('总营业额')}</small><b id="chiusuraTot">${money(num(cur.totale))}</b></div><div><small>${tx('总营业额IVA')}</small><b id="chiusuraIvaTot">${money(num(cur.ivaVendite))}</b></div></div><div class="chiusura-actions" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button class="small-btn" onclick="addChiusuraManual()"><span class="material-symbols-rounded">add_circle</span>${tx('加入营业额')}</button>${hasCur?`<button class="danger-btn" onclick="deleteChiusura('${d}')"><span class="material-symbols-rounded">delete</span>${tx('删除当天营业额')}</button>`:''}</div></div><div class="card" style="margin-top:16px"><h3>${tx('最近营业额记录')}</h3><div class="table-wrap"><table class="table"><thead><tr><th>${tx('日期')}</th><th>${tx('营业额')}</th><th>${tx('营业额IVA')}</th><th></th></tr></thead><tbody>${all.map(x=>`<tr><td>${x.data}</td><td>${money(x.totale)}</td><td>${money(x.ivaVendite)}</td><td><button class="ghost-btn" onclick="changeChiusuraDate('${x.data}')">${tx('编辑')}</button> <button class="danger-btn" onclick="deleteChiusura('${x.data}')">${tx('删除')}</button></td></tr>`).join('')||`<tr><td colspan="4">${tx('暂无数据')}</td></tr>`}</tbody></table></div></div>`}function changeChiusuraDate(d){state.chiusuraDate=normalizeDateValue(d);render()}function deleteChiusura(d){
+  d=normalizeDateValue(d);
+  if(!confirm(tx('确定删除这天的营业额吗？')))return;
+  db.ref('vatManagement/'+state.account+'/chiusure/'+d).remove().then(()=>{
+    if(state.chiusuraDate===d)state.chiusuraDate=d;
+    setTimeout(render,200)
+  })
+}
+function readChiusuraForm(){const n=accounts[state.account],d=normalizeDateValue($('chiusuraDateInput')?.value||todayISO()),values=Array.from({length:n},(_,i)=>$('chiusuraInput'+i)?.value||''),ivaValues=Array.from({length:n},(_,i)=>$('chiusuraIvaInput'+i)?.value||''),totale=values.reduce((s,x)=>s+num(x),0),ivaVendite=ivaValues.reduce((s,x)=>s+num(x),0);return{data:d,values,ivaValues,totale,ivaVendite}}function previewChiusuraTotal(){const c=readChiusuraForm();$('chiusuraTot')&&($('chiusuraTot').textContent=money(c.totale));$('chiusuraIvaTot')&&($('chiusuraIvaTot').textContent=money(c.ivaVendite))}function addChiusuraManual(){
+  const c=readChiusuraForm();
+  const hasInput=(c.values||[]).some(v=>String(v).trim()!=='')||(c.ivaValues||[]).some(v=>String(v).trim()!=='');
+  if(!hasInput)return;
+  state.chiusuraDate=c.data;
+  save('chiusure/'+c.data,c).then(()=>setTimeout(render,200))
+}
+function fattureHTML(){const d=state.fatturaDate||todayISO(),ch=chiusuraByDate(d),day=fattureSummary(fattureByDate(d)),due=Math.max(0,num(ch.ivaVendite)-day.imposta),rate=num(state.data.ivaConfig?.aliquota)||22,needImp=rate?due/(rate/100):0;return`<div class="card"><div class="toolbar"><h3>${tx('发票录入')}</h3><div style="display:flex;gap:8px;flex-wrap:wrap"><div class="input-wrap" style="max-width:220px;background:var(--bg)"><span class="material-symbols-rounded">calendar_month</span>${dateInput('fatturaDateInput',d,'changeFatturaDate')}</div><button class="ghost-btn" onclick="searchFatturaDate()"><span class="material-symbols-rounded">search</span>${tx('搜索')}</button><button class="ghost-btn" onclick="exportCSV()"><span class="material-symbols-rounded">download</span>${tx('导出Excel')}</button><button class="small-btn" onclick="openFatturaModal()"><span class="material-symbols-rounded">add</span>${tx('新增发票')}</button></div></div><div class="grid cards">${metric('blue','point_of_sale','当天营业额',money(ch.totale),'')}${metric('purple','percent','当天营业额IVA',money(ch.ivaVendite),'')}${metric('green','receipt','当天发票IVA',money(day.imposta),'')}${metric('orange','payments','当天要付多少IVA',money(due),'')}</div><div class="grid cards">${metric(due>0?'orange':'green','request_quote','当天缺多少发票',money(needImp*(1+rate/100)),'')}${metric('blue','calculate','当天缺多少未税金额',money(needImp),'')}${metric('green','receipt_long','当天发票金额',money(day.totale),'')}${metric(due>0?'orange':'green','task_alt','状态',due>0?tx('还要付IVA'):tx('IVA已平'),'')}</div></div><div class="card" style="margin-top:16px"><h3>${tx('当天发票')}</h3>${miniTable(fattureByDate(d))}</div><div class="card" style="margin-top:16px"><h3>${tx('全部发票')}</h3>${fullTable(fattureList())}</div>`}function changeFatturaDate(d){state.fatturaDate=normalizeDateValue(d);render()}
+function searchFatturaDate(){
+  const el=$('fatturaDateInput');
+  const d=normalizeDateValue(el?.value||state.fatturaDate||todayISO());
+  state.fatturaDate=d;
+  if(el)el.value=toSlashDate(d);
+  render();
+}
+function rowInput(id,k,v,type='text'){
+  const isDate=['data','emissione','ricezione'].includes(k);
+  const val=isDate?toSlashDate(v||''):(v||'');
+  if(isDate){
+    return `<input type="text" value="${val}" placeholder="DD/MM/YY" oninput="autoSlashDateInput(this)" onblur="updateFattura('${id}','${k}',normalizeDateValue(this.value))">`
+  }
+  return `<input type="text" value="${val}" oninput="updateFattura('${id}','${k}',this.value)">`
+}
+function fullTable(rows){return`<div class="table-wrap"><table class="table"><thead><tr>${['日期','供应商','发票号','开票日期','收到日期','类别','付款方式','IVA税率%','未税金额','税额','总金额','状态','备注',''].map(x=>`<th>${tx(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr><td>${rowInput(r.id,'data',r.data)}</td><td>${rowInput(r.id,'fornitore',r.fornitore)}</td><td>${rowInput(r.id,'numero',r.numero)}</td><td>${rowInput(r.id,'emissione',r.emissione)}</td><td>${rowInput(r.id,'ricezione',r.ricezione)}</td><td>${rowInput(r.id,'categoria',r.categoria)}</td><td>${rowInput(r.id,'pagamento',r.pagamento)}</td><td>${rowInput(r.id,'ivaPercent',r.ivaPercent,'number')}</td><td>${rowInput(r.id,'imponibile',r.imponibile,'number')}</td><td>${rowInput(r.id,'imposta',r.imposta,'number')}</td><td><b>${money(r.totale)}</b></td><td><select onchange="updateFattura('${r.id}','stato',this.value)">${['已登记','待检查','已付款'].map(s=>`<option value="${s}" ${r.stato===s?'selected':''}>${tx(s)}</option>`).join('')}</select></td><td><textarea oninput="updateFattura('${r.id}','note',this.value)">${r.note||''}</textarea></td><td><button class="ghost-btn" onclick="deleteFattura('${r.id}')"><span class="material-symbols-rounded">delete</span></button></td></tr>`).join('')}</tbody></table></div>`}function miniTable(rows){return`<div class="table-wrap"><table class="table"><thead><tr>${['日期','供应商','未税金额','税额','总金额','状态'].map(x=>`<th>${tx(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr><td>${r.data||''}</td><td>${r.fornitore||''}</td><td>${money(r.imponibile)}</td><td>${money(r.imposta)}</td><td>${money(r.totale)}</td><td>${tx(r.stato||'')}</td></tr>`).join('')||`<tr><td colspan="6">${tx('暂无数据')}</td></tr>`}</tbody></table></div>`}
+function modalInput(id,label,type='text',value='',extra=''){return`<div class="modal-field"><label>${tx(label)}</label><input id="${id}" type="text" value="${value||''}" ${extra}></div>`}function openFatturaModal(){
+  closeFatturaModal();
+  const d=toSlashDate(normalizeDateValue(state.fatturaDate||todayISO())),wrap=document.createElement('div');
+  wrap.id='fatturaModal';wrap.className='modal-backdrop';
+  wrap.onclick=e=>{if(e.target.id==='fatturaModal')closeFatturaModal()};
+  wrap.innerHTML=`<div class="modal-card"><div class="modal-head"><h3>${tx('新增发票')}</h3><button class="icon-btn" onclick="closeFatturaModal()"><span class="material-symbols-rounded">close</span></button></div><div class="modal-grid">
+    ${modalInput('mData','日期','text',d,'oninput="autoSlashDateInput(this)" placeholder="DD/MM/YY"')}
+    ${modalInput('mNumero','发票号')}
+    ${modalInput('mFornitore','供应商')}
+    ${modalInput('mIvaPercent','IVA税率%','text','22')}
+    ${modalInput('mImponibile','未税金额','text','', 'oninput="calcModalFatturaTotal()"')}
+    ${modalInput('mImposta','税额','text','', 'oninput="calcModalFatturaTotal()"')}
+    <div class="modal-total"><small>${tx('总金额')}</small><b id="mTotale">€0,00</b></div>
+    <div class="modal-field"><label>${tx('状态')}</label><select id="mStato"><option value="已登记">${tx('已登记')}</option><option value="待检查">${tx('待检查')}</option><option value="已付款">${tx('已付款')}</option></select></div>
+    ${modalInput('mCategoria','类别')}
+    ${modalInput('mPagamento','付款方式')}
+    ${modalInput('mEmissione','开票日期','text','', 'oninput="autoSlashDateInput(this)" placeholder="DD/MM/YY"')}
+    ${modalInput('mRicezione','收到日期','text','', 'oninput="autoSlashDateInput(this)" placeholder="DD/MM/YY"')}
+    <div class="modal-field" style="grid-column:1/-1"><label>${tx('备注')}</label><textarea id="mNote"></textarea></div>
+  </div><div class="modal-actions"><button class="ghost-btn" onclick="closeFatturaModal()">${tx('取消')}</button><button class="small-btn" onclick="saveFatturaModal()"><span class="material-symbols-rounded">check_circle</span> ${tx('保存发票')}</button></div></div>`;
+  document.body.appendChild(wrap);
+  setTimeout(()=>$('mFornitore')?.focus(),50)
+}
+function closeFatturaModal(){const e=$('fatturaModal');if(e)e.remove()}function calcModalFatturaTotal(){const t=num($('mImponibile')?.value)+num($('mImposta')?.value);$('mTotale')&&($('mTotale').textContent=money(t))}function saveFatturaModal(){const id=db.ref().push().key,d=normalizeDateValue($('mData')?.value||state.fatturaDate||todayISO()),r={data:d,fornitore:$('mFornitore')?.value||'',numero:$('mNumero')?.value||'',emissione:normalizeDateValue($('mEmissione')?.value||''),ricezione:normalizeDateValue($('mRicezione')?.value||''),categoria:$('mCategoria')?.value||'',pagamento:$('mPagamento')?.value||'',ivaPercent:$('mIvaPercent')?.value||'',imponibile:$('mImponibile')?.value||'',imposta:$('mImposta')?.value||'',totale:num($('mImponibile')?.value)+num($('mImposta')?.value),stato:$('mStato')?.value||'已登记',note:$('mNote')?.value||''};save('fatture/'+id,r).then(()=>{state.fatturaDate=d;closeFatturaModal();setTimeout(render,200)})}function updateFattura(id,k,v){state.data.fatture=state.data.fatture||{};const r=state.data.fatture[id]||{};r[k]=v;if(k==='imponibile'||k==='imposta')r.totale=num(r.imponibile)+num(r.imposta);state.data.fatture[id]=r;save('fatture/'+id,r)}function deleteFattura(id){if(confirm(currentLang==='it'?'Eliminare questa fattura?':'确定删除这张发票吗？'))db.ref('vatManagement/'+state.account+'/fatture/'+id).remove()}
+function fornitoriHTML(){const map={};fattureList().forEach(x=>{const n=(x.fornitore||'').trim();if(n)map[n]=(map[n]||0)+1});return`<div class="card"><h3>${tx('供应商')}</h3><div class="table-wrap"><table class="table" style="min-width:400px"><thead><tr><th>${tx('供应商')}</th><th>${tx('发票数量')}</th></tr></thead><tbody>${Object.entries(map).map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('')||`<tr><td colspan="2">${tx('暂无数据')}</td></tr>`}</tbody></table></div></div>`}function ivaHTML(){const s=calcSummary();return`${tabs()}<div class="card"><h3>IVA</h3><div class="form-grid"><div class="input-card"><label>${tx('税率')}</label><input type="text" inputmode="decimal" pattern="[0-9.,，]*" value="${state.data.ivaConfig?.aliquota||22}" oninput="save('ivaConfig',{aliquota:this.value})"></div><div class="input-card"><label>${tx('当前范围')}</label><input value="${periodName()}" readonly></div><div class="input-card"><label>${tx('公式')}</label><input value="${tx('营业额IVA - 发票IVA')}" readonly></div></div></div>${summaryCards(s)}<div class="card" style="margin-top:16px"><h3>${tx('当前范围发票')}</h3>${miniTable(s.rows)}</div>`}
+function uniqueMonths(){const set=new Set([monthKey()]);Object.values(state.data.chiusure||{}).forEach(x=>x.data&&set.add(monthKey(x.data)));fattureList().forEach(x=>x.data&&set.add(monthKey(x.data)));return[...set].sort().reverse()}function uniqueQuarters(){const set=new Set([quarterKey()]);Object.values(state.data.chiusure||{}).forEach(x=>x.data&&set.add(quarterKey(x.data)));fattureList().forEach(x=>x.data&&set.add(quarterKey(x.data)));return[...set].sort().reverse()}function monthTitle(m){if(!m)return'';const[y,mo]=m.split('-');return currentLang==='it'?new Date(+y,+mo-1,1).toLocaleDateString('it-IT',{month:'long',year:'numeric'}):`${y}年${+mo}月`}function quarterTitle(q){const[y,qq]=String(q).split('-Q');return currentLang==='it'?`${y} · ${qq}° trimestre`:`${y}年 第${qq}季度`}function monthPred(m){return d=>d&&monthKey(d)===m}function quarterPred(q){return d=>d&&quarterKey(d)===q}function rangeSummary(pred){const ch=Object.values(state.data.chiusure||{}).filter(x=>pred(x.data)),rows=fattureList().filter(x=>pred(x.data)),f=fattureSummary(rows),salesIva=ch.reduce((s,x)=>s+num(x.ivaVendite),0),chiusura=ch.reduce((s,x)=>s+num(x.totale),0),due=Math.max(0,salesIva-f.imposta),rate=num(state.data.ivaConfig?.aliquota)||22,needImp=rate?due/(rate/100):0;return{rows,...f,rangeChiusura:chiusura,chiusura,salesIva,fattureIva:f.imposta,gap:due,needImp,needTot:needImp*(1+rate/100),rate,invoiceCount:rows.length}}function monthSummary(m){return rangeSummary(monthPred(m))}function quarterSummary(q){return rangeSummary(quarterPred(q))}function daysInMonth(m){const[y,mo]=m.split('-').map(Number),n=new Date(y,mo,0).getDate();return Array.from({length:n},(_,i)=>`${m}-${String(i+1).padStart(2,'0')}`)}function monthRecordRows(m){return daysInMonth(m).map(d=>{const saved=!!(state.data.chiusure||{})[d],ch=chiusuraByDate(d),f=fattureSummary(fattureByDate(d)),due=Math.max(0,num(ch.ivaVendite)-f.imposta),rate=num(state.data.ivaConfig?.aliquota)||22,needImp=rate?due/(rate/100):0;return{date:d,saved,chiusura:num(ch.totale),count:f.count,imponibile:f.imponibile,imposta:f.imposta,totale:f.totale,salesIva:num(ch.ivaVendite),gap:due,needTot:needImp*(1+rate/100)}}).filter(r=>r.saved||r.chiusura||r.count||r.salesIva)}function openMonth(m){state.selectedMonth=m;state.page='Monthly';renderNav();render()}function openQuarter(q){state.selectedQuarter=q;state.page='Quarterly';renderNav();render()}function monthNameShort(n){
+  const cn=['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+  if(currentLang==='it')return new Date(2026,n-1,1).toLocaleDateString('it-IT',{month:'long'});
+  return tx(cn[n-1]);
+}
+function monthSelectHTML(months,current){
+  const [y,mo]=String(current||monthKey()).split('-');
+  return `<div class="month-picker">
+    <input id="monthYearInput" type="text" inputmode="numeric" value="${y}" onblur="applyMonthPicker()">
+    <select id="monthNumberSelect" onchange="applyMonthPicker()">
+      ${Array.from({length:12},(_,i)=>`<option value="${String(i+1).padStart(2,'0')}" ${String(i+1).padStart(2,'0')===mo?'selected':''}>${monthNameShort(i+1)}</option>`).join('')}
+    </select>
+  </div>`
+}
+function applyMonthPicker(){
+  const y=($('monthYearInput')?.value||String(new Date().getFullYear())).replace(/\D/g,'')||String(new Date().getFullYear());
+  const m=$('monthNumberSelect')?.value||String(new Date().getMonth()+1).padStart(2,'0');
+  state.selectedMonth=`${y.length===2?'20'+y:y}-${m}`;
+  render();
+}
+function monthlyHTML(){const months=uniqueMonths(),m=state.selectedMonth||monthKey(),s=monthSummary(m),rows=monthRecordRows(m);state.selectedMonth=m;return`<div class="card"><div class="toolbar"><h3>${tx('月记录')}</h3><div class="monthly-filter">${monthSelectHTML(months,m)}</div></div></div>${summaryCards(s,monthTitle(m))}
+<div class="card" style="margin-top:16px"><div class="daily-export-toolbar"><h3>${tx('每天记录')}</h3><button class="ghost-btn" onclick="exportMonthDailyCSV('${m}')"><span class="material-symbols-rounded">download</span>${tx('导出每天记录')}</button></div><div class="table-wrap"><table class="table"><thead><tr>${['日期','营业额','发票数','未税金额','发票IVA','发票金额','营业额IVA','要付多少IVA','缺多少发票'].map(x=>`<th>${tx(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr><td>${r.date}</td><td>${money(r.chiusura)}</td><td>${r.count}</td><td>${money(r.imponibile)}</td><td>${money(r.imposta)}</td><td>${money(r.totale)}</td><td>${money(r.salesIva)}</td><td>${money(r.gap)}</td><td>${money(r.needTot)}</td></tr>`).join('')||`<tr><td colspan="9">${tx('暂无数据')}</td></tr>`}</tbody></table></div></div>
+<div class="card" style="margin-top:16px"><div class="toolbar"><h3>${tx('本月发票')}</h3><button class="ghost-btn" onclick="exportMonthInvoicesCSV('${m}')"><span class="material-symbols-rounded">download</span>${tx('导出本月发票')}</button></div>${miniTable(s.rows)}</div>`}
+function quarterOptionsHTML(q){
+  const y=String(q||quarterKey()).split('-Q')[0]||String(new Date().getFullYear());
+  const cur=String(q||quarterKey()).split('-Q')[1]||'1';
+  return `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <input class="ghost-btn" style="max-width:110px" type="text" inputmode="numeric" value="${y}" onchange="state.selectedQuarter=this.value+'-Q'+($('quarterSelect')?.value||'${cur}');render()">
+    <select id="quarterSelect" class="ghost-btn" onchange="state.selectedQuarter='${y}-Q'+this.value;render()">
+      <option value="1" ${cur==='1'?'selected':''}>${tx('第一季度')}</option>
+      <option value="2" ${cur==='2'?'selected':''}>${tx('第二季度')}</option>
+      <option value="3" ${cur==='3'?'selected':''}>${tx('第三季度')}</option>
+      <option value="4" ${cur==='4'?'selected':''}>${tx('第四季度')}</option>
+    </select>
+    <button class="ghost-btn" onclick="exportQuarterCSV('${q}')"><span class="material-symbols-rounded">download</span>${tx('导出季度')}</button>
+  </div>`;
+}
+function quarterlyHTML(){const q=state.selectedQuarter||quarterKey(),s=quarterSummary(q),ms=[0,1,2].map(i=>{const[y,qq]=q.split('-Q'),start=(+qq-1)*3;return`${y}-${String(start+i+1).padStart(2,'0')}`});state.selectedQuarter=q;return`<div class="card"><div class="toolbar"><h3>${tx('季度记录')}</h3>${quarterOptionsHTML(q)}</div></div>${summaryCards(s,quarterTitle(q))}<div class="card" style="margin-top:16px"><h3>${tx('三个月记录')}</h3><div class="table-wrap"><table class="table"><thead><tr>${['月份','营业额','发票数','未税金额','发票IVA','发票金额','营业额IVA','要付多少IVA','缺多少发票',''].map(x=>`<th>${tx(x)}</th>`).join('')}</tr></thead><tbody>${ms.map(m=>{const x=monthSummary(m);return`<tr><td>${monthTitle(m)}</td><td>${money(x.chiusura)}</td><td>${x.invoiceCount}</td><td>${money(x.imponibile)}</td><td>${money(x.imposta)}</td><td>${money(x.totale)}</td><td>${money(x.salesIva)}</td><td>${money(x.gap)}</td><td>${money(x.needTot)}</td><td><button class="ghost-btn" onclick="openMonth('${m}')">${tx('查看月记录')}</button></td></tr>`}).join('')}</tbody></table></div></div>`}
+function reportHTML(){const months=uniqueMonths(),quarters=uniqueQuarters();return`<div class="card"><h3>${tx('报表')}</h3></div><div class="card" style="margin-top:16px"><h3>${tx('月记录')}</h3><div class="table-wrap"><table class="table"><thead><tr>${['月份','营业额','要付多少IVA','缺多少发票',''].map(x=>`<th>${tx(x)}</th>`).join('')}</tr></thead><tbody>${months.map(m=>{const x=monthSummary(m);return`<tr><td>${monthTitle(m)}</td><td>${money(x.chiusura)}</td><td>${money(x.gap)}</td><td>${money(x.needTot)}</td><td><button class="ghost-btn" onclick="openMonth('${m}')">${tx('查看')}</button></td></tr>`}).join('')}</tbody></table></div></div><div class="card" style="margin-top:16px"><h3>${tx('季度记录')}</h3><div class="table-wrap"><table class="table"><thead><tr>${['季度','营业额','要付多少IVA','缺多少发票',''].map(x=>`<th>${tx(x)}</th>`).join('')}</tr></thead><tbody>${quarters.map(q=>{const x=quarterSummary(q);return`<tr><td>${quarterTitle(q)}</td><td>${money(x.chiusura)}</td><td>${money(x.gap)}</td><td>${money(x.needTot)}</td><td><button class="ghost-btn" onclick="openQuarter('${q}')">${tx('查看')}</button></td></tr>`}).join('')}</tbody></table></div></div>`}
+function downloadCSV(rows,filename){
+  const csv=rows.map(r=>r.map(x=>'"'+String(x??'').replaceAll('"','""')+'"').join(';')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  a.click();
+}
+function exportMonthDailyCSV(m=state.selectedMonth||monthKey()){
+  const headers=['日期','营业额','发票数','未税金额','发票IVA','发票金额','营业额IVA','要付多少IVA','缺多少发票'].map(tx);
+  const data=monthRecordRows(m);
+  const rows=[headers,...data.map(r=>[r.date,r.chiusura,r.count,r.imponibile,r.imposta,r.totale,r.salesIva,r.gap,r.needTot])];
+  downloadCSV(rows,`${currentLang==='it'?'registro_giornaliero':'每天记录'}_${state.account}_${m}.csv`);
+}
+function exportMonthInvoicesCSV(m=state.selectedMonth||monthKey()){
+  const headers=['日期','供应商','发票号','开票日期','收到日期','类别','付款方式','IVA税率%','未税金额','税额','总金额','状态','备注'].map(tx);
+  const rowsData=fattureList().filter(r=>r.data&&monthKey(r.data)===m);
+  const rows=[headers,...rowsData.map(r=>[r.data,r.fornitore,r.numero,r.emissione,r.ricezione,r.categoria,r.pagamento,r.ivaPercent,r.imponibile,r.imposta,r.totale,tx(r.stato),r.note])];
+  downloadCSV(rows,`${currentLang==='it'?'fatture_mese':'本月发票'}_${state.account}_${m}.csv`);
+}
+function exportQuarterCSV(q=state.selectedQuarter||quarterKey()){
+  const months=[0,1,2].map(i=>{const[y,qq]=String(q).split('-Q'),start=(+qq-1)*3;return `${y}-${String(start+i+1).padStart(2,'0')}`});
+  const headers=['月份','营业额','发票数','未税金额','发票IVA','发票金额','营业额IVA','要付多少IVA','缺多少发票'].map(tx);
+  const rows=[headers,...months.map(m=>{const x=monthSummary(m);return[monthTitle(m),x.chiusura,x.invoiceCount,x.imponibile,x.imposta,x.totale,x.salesIva,x.gap,x.needTot]})];
+  downloadCSV(rows,`${currentLang==='it'?'trimestre':'季度记录'}_${state.account}_${q}.csv`);
+}
+function exportCSV(){const headers=['日期','供应商','发票号','开票日期','收到日期','类别','付款方式','IVA税率%','未税金额','税额','总金额','状态','备注'].map(tx),rows=[headers,...fattureList().map(r=>[r.data,r.fornitore,r.numero,r.emissione,r.ricezione,r.categoria,r.pagamento,r.ivaPercent,r.imponibile,r.imposta,r.totale,tx(r.stato),r.note])];downloadCSV(rows,`${currentLang==='it'?'fatture':'发票'}_${state.account}.csv`)}
+$('loginPassword').addEventListener('keydown',e=>{if(e.key==='Enter')login()});applyTheme();updateLangButtons();
+if(!restoreSession()){$('loginPage').classList.remove('hidden');$('appPage').classList.add('hidden')}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)extendSession();else checkSession()});
+window.addEventListener('pagehide',()=>extendSession());
+window.addEventListener('focus',checkSession);
+setInterval(checkSession,60000);
+</script></body></html>
