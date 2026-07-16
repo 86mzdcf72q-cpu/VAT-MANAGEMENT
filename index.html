@@ -697,10 +697,6 @@
 }
 
 @media(max-width:900px){.monthly-filter .ghost-btn{width:100%}}
-
-/* Supplier autocomplete */
-.supplier-suggestions{position:relative}
-.supplier-suggestions input{width:100%}
 </style>
 </head>
 <body>
@@ -967,33 +963,9 @@ function rowInput(id,k,v,type='text'){
   if(isDate){
     return `<input type="text" value="${val}" placeholder="DD/MM/YY" oninput="autoSlashDateInput(this)" onblur="updateFattura('${id}','${k}',normalizeDateValue(this.value))">`
   }
-  const supplierAttr=k==='fornitore'?' list="supplierHistory" autocomplete="off"':'';
-  const handler=k==='fornitore'?`onchange="updateFattura('${id}','${k}',canonicalSupplierName(this.value));this.value=canonicalSupplierName(this.value)"`:`oninput="updateFattura('${id}','${k}',this.value)"`;
-  return `<input type="text" value="${val}"${supplierAttr} ${handler}>`
+  return `<input type="text" value="${val}" oninput="updateFattura('${id}','${k}',this.value)">`
 }
-function fullTable(rows){return`${supplierDataListHTML()}<div class="table-wrap"><table class="table"><thead><tr>${['日期','供应商','发票号','开票日期','收到日期','类别','付款方式','IVA税率%','未税金额','税额','总金额','状态','备注',''].map(x=>`<th>${tx(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr><td>${rowInput(r.id,'data',r.data)}</td><td>${rowInput(r.id,'fornitore',r.fornitore)}</td><td>${rowInput(r.id,'numero',r.numero)}</td><td>${rowInput(r.id,'emissione',r.emissione)}</td><td>${rowInput(r.id,'ricezione',r.ricezione)}</td><td>${rowInput(r.id,'categoria',r.categoria)}</td><td>${rowInput(r.id,'pagamento',r.pagamento)}</td><td>${rowInput(r.id,'ivaPercent',r.ivaPercent,'number')}</td><td>${rowInput(r.id,'imponibile',r.imponibile,'number')}</td><td>${rowInput(r.id,'imposta',r.imposta,'number')}</td><td><b>${money(r.totale)}</b></td><td><select onchange="updateFattura('${r.id}','stato',this.value)">${['已登记','待检查','已付款'].map(s=>`<option value="${s}" ${r.stato===s?'selected':''}>${tx(s)}</option>`).join('')}</select></td><td><textarea oninput="updateFattura('${r.id}','note',this.value)">${r.note||''}</textarea></td><td><button class="ghost-btn" onclick="deleteFattura('${r.id}')"><span class="material-symbols-rounded">delete</span></button></td></tr>`).join('')}</tbody></table></div>`}function miniTable(rows){rows=(rows||[]).map(normalizeFatturaAmounts);return`<div class="table-wrap"><table class="table"><thead><tr>${['日期','供应商','开票日期','收到日期','未税金额','税额','总金额','状态'].map(x=>`<th>${tx(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr><td>${r.data||''}</td><td>${r.fornitore||''}</td><td>${toSlashDate(r.emissione||'')}</td><td>${toSlashDate(r.ricezione||'')}</td><td>${money(r.imponibile)}</td><td>${money(r.imposta)}</td><td>${money(r.totale)}</td><td>${tx(r.stato||'')}</td></tr>`).join('')||`<tr><td colspan="8">${tx('暂无数据')}</td></tr>`}</tbody></table></div>`}
-function escapeHTML(v){return String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
-function supplierNames(){
-  const seen=new Map();
-  fattureList().forEach(r=>{
-    const name=String(r.fornitore||'').trim();
-    if(!name)return;
-    const key=name.toLocaleLowerCase('it-IT');
-    const time=String(r.data||r.emissione||r.ricezione||'');
-    const old=seen.get(key);
-    if(!old||time>old.time)seen.set(key,{name,time});
-  });
-  return [...seen.values()].sort((a,b)=>b.time.localeCompare(a.time)||a.name.localeCompare(b.name,'it')).map(x=>x.name);
-}
-function supplierDataListHTML(){
-  return `<datalist id="supplierHistory">${supplierNames().map(n=>`<option value="${escapeHTML(n)}"></option>`).join('')}</datalist>`;
-}
-function canonicalSupplierName(value){
-  const clean=String(value||'').trim();
-  if(!clean)return '';
-  const found=supplierNames().find(n=>n.toLocaleLowerCase('it-IT')===clean.toLocaleLowerCase('it-IT'));
-  return found||clean;
-}
+function fullTable(rows){return`<div class="table-wrap"><table class="table"><thead><tr>${['日期','供应商','发票号','开票日期','收到日期','类别','付款方式','IVA税率%','未税金额','税额','总金额','状态','备注',''].map(x=>`<th>${tx(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr><td>${rowInput(r.id,'data',r.data)}</td><td>${rowInput(r.id,'fornitore',r.fornitore)}</td><td>${rowInput(r.id,'numero',r.numero)}</td><td>${rowInput(r.id,'emissione',r.emissione)}</td><td>${rowInput(r.id,'ricezione',r.ricezione)}</td><td>${rowInput(r.id,'categoria',r.categoria)}</td><td>${rowInput(r.id,'pagamento',r.pagamento)}</td><td>${rowInput(r.id,'ivaPercent',r.ivaPercent,'number')}</td><td>${rowInput(r.id,'imponibile',r.imponibile,'number')}</td><td>${rowInput(r.id,'imposta',r.imposta,'number')}</td><td><b>${money(r.totale)}</b></td><td><select onchange="updateFattura('${r.id}','stato',this.value)">${['已登记','待检查','已付款'].map(s=>`<option value="${s}" ${r.stato===s?'selected':''}>${tx(s)}</option>`).join('')}</select></td><td><textarea oninput="updateFattura('${r.id}','note',this.value)">${r.note||''}</textarea></td><td><button class="ghost-btn" onclick="deleteFattura('${r.id}')"><span class="material-symbols-rounded">delete</span></button></td></tr>`).join('')}</tbody></table></div>`}function miniTable(rows){rows=(rows||[]).map(normalizeFatturaAmounts);return`<div class="table-wrap"><table class="table"><thead><tr>${['日期','供应商','开票日期','收到日期','未税金额','税额','总金额','状态'].map(x=>`<th>${tx(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr><td>${r.data||''}</td><td>${r.fornitore||''}</td><td>${toSlashDate(r.emissione||'')}</td><td>${toSlashDate(r.ricezione||'')}</td><td>${money(r.imponibile)}</td><td>${money(r.imposta)}</td><td>${money(r.totale)}</td><td>${tx(r.stato||'')}</td></tr>`).join('')||`<tr><td colspan="8">${tx('暂无数据')}</td></tr>`}</tbody></table></div>`}
 function modalInput(id,label,type='text',value='',extra=''){return`<div class="modal-field"><label>${tx(label)}</label><input id="${id}" type="text" value="${value||''}" ${extra}></div>`}function openFatturaModal(){
   closeFatturaModal();
   const d=toSlashDate(normalizeDateValue(state.fatturaDate||todayISO())),wrap=document.createElement('div');
@@ -1002,8 +974,7 @@ function modalInput(id,label,type='text',value='',extra=''){return`<div class="m
   wrap.innerHTML=`<div class="modal-card"><div class="modal-head"><h3>${tx('新增发票')}</h3><button class="icon-btn" onclick="closeFatturaModal()"><span class="material-symbols-rounded">close</span></button></div><div class="modal-grid">
     ${modalInput('mData','日期','text',d,'oninput="autoSlashDateInput(this)" placeholder="DD/MM/YY"')}
     ${modalInput('mNumero','发票号')}
-    ${modalInput('mFornitore','供应商','text','', 'list="supplierHistory" autocomplete="off"')}
-    ${supplierDataListHTML()}
+    ${modalInput('mFornitore','供应商')}
     ${modalInput('mIvaPercent','IVA税率%','text','22')}
     ${modalInput('mImponibile','未税金额','text','', 'oninput="calcModalFatturaTotal()"')}
     ${modalInput('mImposta','税额','text','', 'oninput="calcModalFatturaTotal()"')}
@@ -1018,7 +989,7 @@ function modalInput(id,label,type='text',value='',extra=''){return`<div class="m
   document.body.appendChild(wrap);
   setTimeout(()=>$('mFornitore')?.focus(),50)
 }
-function closeFatturaModal(){const e=$('fatturaModal');if(e)e.remove()}function calcModalFatturaTotal(){const t=num($('mImponibile')?.value)+num($('mImposta')?.value);$('mTotale')&&($('mTotale').textContent=money(t))}function saveFatturaModal(){const id=db.ref().push().key,d=normalizeDateValue($('mData')?.value||state.fatturaDate||todayISO()),r={data:d,fornitore:canonicalSupplierName($('mFornitore')?.value||''),numero:$('mNumero')?.value||'',emissione:normalizeDateValue($('mEmissione')?.value||''),ricezione:normalizeDateValue($('mRicezione')?.value||''),categoria:$('mCategoria')?.value||'',pagamento:$('mPagamento')?.value||'',ivaPercent:$('mIvaPercent')?.value||'',imponibile:$('mImponibile')?.value||'',imposta:$('mImposta')?.value||'',totale:num($('mImponibile')?.value)+num($('mImposta')?.value),stato:$('mStato')?.value||'已登记',note:$('mNote')?.value||''};state.data.fatture=state.data.fatture||{};state.data.fatture[id]=r;save('fatture/'+id,r).then(()=>{state.fatturaDate=d;closeFatturaModal();setTimeout(render,200)})}
+function closeFatturaModal(){const e=$('fatturaModal');if(e)e.remove()}function calcModalFatturaTotal(){const t=num($('mImponibile')?.value)+num($('mImposta')?.value);$('mTotale')&&($('mTotale').textContent=money(t))}function saveFatturaModal(){const id=db.ref().push().key,d=normalizeDateValue($('mData')?.value||state.fatturaDate||todayISO()),r={data:d,fornitore:$('mFornitore')?.value||'',numero:$('mNumero')?.value||'',emissione:normalizeDateValue($('mEmissione')?.value||''),ricezione:normalizeDateValue($('mRicezione')?.value||''),categoria:$('mCategoria')?.value||'',pagamento:$('mPagamento')?.value||'',ivaPercent:$('mIvaPercent')?.value||'',imponibile:$('mImponibile')?.value||'',imposta:$('mImposta')?.value||'',totale:num($('mImponibile')?.value)+num($('mImposta')?.value),stato:$('mStato')?.value||'已登记',note:$('mNote')?.value||''};state.data.fatture=state.data.fatture||{};state.data.fatture[id]=r;save('fatture/'+id,r).then(()=>{state.fatturaDate=d;closeFatturaModal();setTimeout(render,200)})}
 function updateFattura(id,k,v){
   state.data.fatture=state.data.fatture||{};
   const r=state.data.fatture[id]||{};
@@ -1136,4 +1107,32 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)extendSessi
 window.addEventListener('pagehide',()=>extendSession());
 window.addEventListener('focus',checkSession);
 setInterval(checkSession,60000);
-</script></body></html>
+</script>
+<style>
+.supplier-dropdown{position:absolute;background:#fff;border:1px solid #ddd;max-height:180px;overflow:auto;z-index:9999;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.supplier-item{padding:10px;cursor:pointer}.supplier-item:hover{background:#2563eb;color:#fff}
+</style>
+<script>
+document.addEventListener('focusin',e=>{
+ if(e.target&&e.target.id==='mFornitore'){
+   const input=e.target;
+   let box=document.getElementById('supplierBox');
+   if(!box){box=document.createElement('div');box.id='supplierBox';box.className='supplier-dropdown';document.body.appendChild(box);}
+   function list(){
+    const vals=[...new Set((typeof fattureList==='function'?fattureList():[]).map(x=>(x.fornitore||'').trim().toUpperCase()).filter(Boolean))];
+    const q=input.value.trim().toUpperCase();
+    const arr=vals.filter(v=>v.includes(q)).slice(0,15);
+    const r=input.getBoundingClientRect();
+    box.style.left=r.left+'px';box.style.top=(r.bottom+window.scrollY)+'px';box.style.width=r.width+'px';
+    box.innerHTML=arr.map(v=>'<div class="supplier-item">'+v+'</div>').join('');
+    box.style.display=arr.length?'block':'none';
+    [...box.children].forEach(c=>c.onclick=()=>{input.value=c.textContent;box.style.display='none';});
+   }
+   input.addEventListener('input',list);
+   input.addEventListener('focus',list);
+   document.addEventListener('click',ev=>{if(ev.target!==input&&!box.contains(ev.target))box.style.display='none';});
+ }
+});
+</script>
+
+</body></html>
