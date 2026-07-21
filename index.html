@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Poppins:wght@700;800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,1,0" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <style>
 :root{--bg:#f4f6fb;--card:#fff;--text:#111827;--muted:#6b7280;--line:#e5e7eb;--primary:#2563eb;--nav:#071b33;--nav2:#0b2b4e;--green:#16a34a;--red:#dc2626;--orange:#f59e0b;--purple:#7c3aed;--shadow:0 14px 36px rgba(15,23,42,.08);--radius:20px}*{box-sizing:border-box}html,body{margin:0;max-width:100%;overflow-x:hidden;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif}.material-symbols-rounded{font-size:22px}.hidden{display:none!important}button,input,select,textarea{font-family:inherit}.login-page{min-height:100dvh;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at 20% 10%,#dbeafe,transparent 30%),var(--bg)}.login-card{position:relative;width:min(420px,100%);background:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.8);border-radius:28px;box-shadow:var(--shadow);padding:34px}.brand{text-align:center;margin-bottom:22px}.logo{display:grid;place-items:center;overflow:hidden}.brand .logo{width:58px;height:58px;margin:0 auto 14px;border-radius:18px;background:linear-gradient(135deg,#ff8a1f,#ff3d54);box-shadow:0 16px 30px rgba(255,99,71,.25)}.sun-logo{width:64%;height:64%}.brand h1{font-family:Poppins,sans-serif;letter-spacing:.08em;margin:0;font-size:26px}.brand p{color:var(--muted);margin:6px 0 0;font-weight:700}.field{margin:16px 0}.field label{display:block;font-size:13px;color:var(--muted);font-weight:800;margin-bottom:8px}.input-wrap{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);border-radius:15px;padding:0 12px}.input-wrap input,.input-wrap select{border:0;background:transparent;outline:0;width:100%;height:46px;color:var(--text);font-size:15px}.primary-btn,.small-btn,.ghost-btn,.icon-btn{cursor:pointer;border:0}.primary-btn{width:100%;height:48px;border-radius:15px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;font-weight:900;font-size:15px}.small-btn{height:40px;border-radius:13px;background:#2563eb;color:#fff;padding:0 14px;font-weight:900;display:inline-flex;align-items:center;gap:6px;justify-content:center}.ghost-btn{height:40px;border-radius:13px;border:1px solid var(--line);background:var(--card);color:var(--text);padding:0 14px;font-weight:900;display:inline-flex;align-items:center;gap:6px;justify-content:center}.icon-btn{width:42px;height:42px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--text);display:grid;place-items:center}.lang-login{position:absolute;top:16px;right:16px;width:44px;height:34px;border-radius:12px;border:1px solid var(--line);background:#fff;font-weight:900}.app{display:flex;min-height:100dvh}.sidebar{width:280px;background:linear-gradient(180deg,var(--nav),var(--nav2));color:#fff;padding:22px 16px;display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:30}.side-brand{display:flex;align-items:center;gap:12px;padding:8px 8px 24px}.side-brand .logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#ff8a1f,#ff3d54);box-shadow:0 12px 24px rgba(255,99,71,.22)}.side-brand strong{font-family:Poppins,sans-serif;letter-spacing:.05em}.nav{display:grid;gap:7px}.nav button{height:48px;border:0;border-radius:14px;background:transparent;color:#dbeafe;text-align:left;padding:0 12px;font-weight:800;font-size:14px;display:flex;align-items:center;gap:10px;cursor:pointer}.nav button.active,.nav button:hover{background:#2563eb;color:#fff}.side-user{margin-top:auto;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:14px;display:flex;gap:10px;align-items:center}.main{margin-left:280px;width:calc(100% - 280px);padding:22px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.title-row h2{margin:0;font-family:Poppins,sans-serif;font-size:26px}.title-row p{margin:3px 0 0;color:var(--muted);font-weight:700}.top-actions{display:flex;align-items:center;gap:8px}.date-pill{height:42px;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:0 12px;display:flex;align-items:center;gap:7px;font-weight:800}.mobile-menu{display:none}.grid{display:grid;gap:16px}.cards{grid-template-columns:repeat(4,minmax(0,1fr));margin:16px 0}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}.metric{display:flex;gap:12px;align-items:center}.metric-icon{width:50px;height:50px;border-radius:16px;display:grid;place-items:center;flex:0 0 50px}.blue{background:#dbeafe;color:#2563eb}.green{background:#dcfce7;color:#16a34a}.orange{background:#ffedd5;color:#f97316}.purple{background:#ede9fe;color:#7c3aed}.metric small{display:block;color:var(--muted);font-weight:900;font-size:12px}.metric b{display:block;font-size:23px;margin-top:4px}.content-grid{grid-template-columns:1.15fr .85fr}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:3px}.tabs button{border:1px solid var(--line);background:var(--card);color:var(--text);height:38px;min-width:84px;padding:0 12px;border-radius:13px;font-weight:900;white-space:nowrap}.tabs button.active{background:#2563eb;color:#fff}.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.input-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px}.input-card label{display:block;color:var(--muted);font-weight:900;font-size:12px;margin-bottom:7px}.input-card input{height:44px;width:100%;border:1px solid var(--line);border-radius:13px;padding:0 12px;background:var(--bg);font-size:16px;color:var(--text);outline:0}.total-box{margin-top:14px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;border-radius:20px;padding:18px}.total-box small{display:block;opacity:.86;font-weight:900}.total-box b{font-size:28px}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:16px}.table{width:100%;border-collapse:collapse;min-width:850px}.table th,.table td{padding:10px;border-bottom:1px solid var(--line);font-size:12px;text-align:left;white-space:nowrap}.table th{color:var(--muted);font-weight:900}.table input,.table select{width:100%;min-width:105px;height:34px;border:1px solid var(--line);border-radius:9px;padding:0 8px;background:var(--card);color:var(--text);outline:0}.table textarea{min-width:130px;border:1px solid var(--line);border-radius:9px;padding:8px;background:var(--card);color:var(--text)}.fake-chart{height:220px;border-radius:18px;background:linear-gradient(180deg,rgba(37,99,235,.14),transparent),repeating-linear-gradient(0deg,transparent 0 49px,var(--line) 50px)}.donut{width:200px;height:200px;border-radius:50%;margin:auto;background:conic-gradient(#2563eb 0 62%,#8b5cf6 62% 88%,#86efac 88%);display:grid;place-items:center}.donut:before{content:attr(data-label);white-space:pre;text-align:center;width:110px;height:110px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-weight:900;font-size:13px}.modal-backdrop{position:fixed;inset:0;z-index:90;background:rgba(15,23,42,.48);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:16px}.modal-card{width:min(720px,100%);max-height:92dvh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:0 30px 80px rgba(15,23,42,.28);padding:20px}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.modal-head h3{margin:0;font-size:19px}.modal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.modal-field label{display:block;font-size:11px;color:var(--muted);font-weight:900;margin-bottom:5px}.modal-field input,.modal-field select,.modal-field textarea{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:12px;min-height:38px;padding:0 10px;font-size:15px;outline:0}.modal-field textarea{min-height:42px;padding:9px;resize:none}.modal-total{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;border-radius:14px;padding:10px}.modal-total small{display:block;opacity:.85;font-size:11px;font-weight:900}.modal-total b{font-size:21px}.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
 @media(max-width:900px){body{font-size:14px}.login-page{padding:16px}.login-card{padding:26px 20px}.brand h1{font-size:22px}.sidebar{transform:translateX(-100%);transition:.2s;width:min(86vw,310px)}.sidebar.open{transform:translateX(0)}.main{margin-left:0;width:100%;padding:12px}.mobile-menu{display:grid}.topbar{gap:8px;align-items:flex-start}.title-row h2{font-size:21px}.top-actions{gap:6px}.date-pill{display:none}.cards,.content-grid,.form-grid{grid-template-columns:1fr!important;gap:10px}.card,.input-card{padding:13px;border-radius:17px}.metric-icon{width:44px;height:44px;border-radius:14px;flex-basis:44px}.metric b{font-size:20px}.toolbar{flex-direction:column;align-items:stretch}.toolbar>div{width:100%}.toolbar .input-wrap{max-width:none!important;width:100%}.small-btn,.ghost-btn{width:100%;height:38px}.input-card input{height:40px}.total-box{grid-template-columns:1fr!important;padding:15px}.total-box b{font-size:24px}.table-wrap{width:100%;overflow-x:auto}.table{min-width:720px}.fake-chart{height:180px}.donut{width:170px;height:170px}.modal-backdrop{align-items:center;padding:8px}.modal-card{width:100%;max-height:96dvh;border-radius:18px;padding:12px}.modal-head{margin-bottom:8px}.modal-head h3{font-size:17px}.modal-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.modal-field label{font-size:10px;margin-bottom:3px}.modal-field input,.modal-field select{min-height:34px;height:34px;border-radius:10px;font-size:14px;padding:0 8px}.modal-field textarea{min-height:34px;height:34px;padding:7px;font-size:14px}.modal-total{padding:8px;border-radius:12px}.modal-total b{font-size:18px}.modal-actions{margin-top:9px;display:grid;grid-template-columns:1fr 1fr;gap:8px}.modal-actions .small-btn,.modal-actions .ghost-btn{height:36px;width:100%;font-size:13px}.modal-card .icon-btn{width:34px;height:34px;border-radius:10px}}
@@ -704,8 +705,14 @@
 <section id="appPage" class="app hidden"><aside id="sidebar" class="sidebar"><div class="side-brand"><div class="logo" id="sideLogo"><svg viewBox="0 0 64 64" class="sun-logo"><circle cx="32" cy="32" r="11" fill="none" stroke="#fff" stroke-width="4"/><g stroke="#fff" stroke-width="4" stroke-linecap="round"><line x1="32" y1="8" x2="32" y2="15"/><line x1="32" y1="49" x2="32" y2="56"/><line x1="8" y1="32" x2="15" y2="32"/><line x1="49" y1="32" x2="56" y2="32"/><line x1="15" y1="15" x2="20" y2="20"/><line x1="44" y1="44" x2="49" y2="49"/><line x1="44" y1="20" x2="49" y2="15"/><line x1="15" y1="49" x2="20" y2="44"/></g></svg></div><div><strong id="brandTitle">VAT</strong><br><span id="brandSub">增值税管理</span></div></div><nav class="nav" id="nav"></nav><div class="side-user"><span class="material-symbols-rounded">account_circle</span><div><b id="sideAccount">EMP</b><br><span id="adminLabel">管理员</span></div></div></aside><main class="main"><div class="topbar"><button class="icon-btn mobile-menu" onclick="toggleSidebar()"><span class="material-symbols-rounded">menu</span></button><div class="title-row"><h2 id="pageTitle">总览</h2><p id="accountSub">EMP</p></div><div class="top-actions"><div class="date-pill"><span class="material-symbols-rounded">calendar_month</span><span id="todayText"></span></div><button class="icon-btn lang-btn" id="topLangBtn" onclick="toggleLang()">IT</button><button class="icon-btn" onclick="toggleTheme()"><span class="material-symbols-rounded">dark_mode</span></button><button class="icon-btn" onclick="logout()"><span class="material-symbols-rounded">logout</span></button></div></div><div id="view"></div></main></section>
 <script>
 const firebaseConfig={apiKey:"AIzaSyA5wo62VKzPn0V2H-po-1RSXgqS9FCCEgk",authDomain:"cmfinance26-14668.firebaseapp.com",databaseURL:"https://cmfinance26-14668-default-rtdb.europe-west1.firebasedatabase.app",projectId:"cmfinance26-14668",storageBucket:"cmfinance26-14668.firebasestorage.app",messagingSenderId:"40879571268",appId:"1:40879571268:web:e42a32daee1522412f1711",measurementId:"G-Y6052HLV4R"};
-firebase.initializeApp(firebaseConfig);const db=firebase.database();
-const PASS='Admin2026',accounts={EMP:2,SUNSHOP:1,CASAISSIMA:3};let currentLang=localStorage.vatLang||'zh';let state={account:null,page:'Dashboard',period:'quarter',chiusuraDate:null,fatturaDate:null,selectedMonth:null,selectedQuarter:null,data:{chiusure:{},fatture:{},iva:{}}};let appCurrentDate=todayISO(),dateRefreshTimer=null;
+firebase.initializeApp(firebaseConfig);const db=firebase.database();const auth=firebase.auth();
+const ACCOUNT_EMAILS={
+  EMP:'emp@cmfinance26.app',
+  SUNSHOP:'sunshop@cmfinance26.app',
+  CASAISSIMA:'casaissima@cmfinance26.app'
+};
+const EMAIL_ACCOUNTS=Object.fromEntries(Object.entries(ACCOUNT_EMAILS).map(([account,email])=>[email.toLowerCase(),account]));
+const accounts={EMP:2,SUNSHOP:1,CASAISSIMA:3};let currentLang=localStorage.vatLang||'zh';let state={account:null,page:'Dashboard',period:'quarter',chiusuraDate:null,fatturaDate:null,selectedMonth:null,selectedQuarter:null,data:{chiusure:{},fatture:{},iva:{}}};let appCurrentDate=todayISO(),dateRefreshTimer=null;
 const $=id=>document.getElementById(id),num=v=>{
   let s=String(v??'').trim().replace(/，/g,',');
   if(!s)return 0;
@@ -785,16 +792,114 @@ const SESSION_MS=30*60*1000;
 function rememberSession(acc){localStorage.vatAccount=acc;localStorage.vatAuthUntil=String(Date.now()+SESSION_MS)}
 function sessionValid(){return localStorage.vatAccount&&Number(localStorage.vatAuthUntil||0)>Date.now()}
 function extendSession(){if(appUnlocked&&state.account)rememberSession(state.account)}
-function login(){const acc=$('loginAccount').value,p=$('loginPassword').value;if(p!==PASS){$('loginError').textContent=currentLang==='it'?'Password errata':'密码错误';return}state.account=acc;appUnlocked=true;rememberSession(acc);$('loginPassword').value='';$('loginError').textContent='';$('loginPage').classList.add('hidden');$('appPage').classList.remove('hidden');initApp()}
-function lockApp(force=false){if(!force&&appUnlocked&&state.account){rememberSession(state.account);return}appUnlocked=false;if(activeDbRef){activeDbRef.off();activeDbRef=null}state.account=null;state.data={chiusure:{},fatture:{},iva:{}};localStorage.removeItem('vatAccount');localStorage.removeItem('vatAuthUntil');$('appPage').classList.add('hidden');$('loginPage').classList.remove('hidden');$('loginPassword').value='';updateLangButtons()}
-function logout(){lockApp(true)}
-function restoreSession(){if(sessionValid()&&accounts[localStorage.vatAccount]){state.account=localStorage.vatAccount;appUnlocked=true;$('loginPage').classList.add('hidden');$('appPage').classList.remove('hidden');initApp();return true}localStorage.removeItem('vatAccount');localStorage.removeItem('vatAuthUntil');return false}
-function checkSession(){if(appUnlocked&&Number(localStorage.vatAuthUntil||0)<=Date.now())lockApp(true)}
+function authErrorMessage(error){
+  const code=error&&error.code||'';
+  if(code==='auth/invalid-credential'||code==='auth/wrong-password'||code==='auth/user-not-found'){
+    return currentLang==='it'?'Email o password errati':'账号或密码错误';
+  }
+  if(code==='auth/too-many-requests'){
+    return currentLang==='it'?'Troppi tentativi. Riprova più tardi.':'尝试次数过多，请稍后再试';
+  }
+  if(code==='auth/network-request-failed'){
+    return currentLang==='it'?'Errore di rete. Controlla la connessione.':'网络错误，请检查网络连接';
+  }
+  return currentLang==='it'?'Accesso non riuscito':'登录失败';
+}
+async function login(){
+  const acc=$('loginAccount').value;
+  const password=$('loginPassword').value;
+  const email=ACCOUNT_EMAILS[acc];
+  const errorBox=$('loginError');
+  errorBox.textContent='';
+  if(!password){
+    errorBox.textContent=currentLang==='it'?'Inserisci la password':'请输入密码';
+    return;
+  }
+  try{
+    const credential=await auth.signInWithEmailAndPassword(email,password);
+    const signedEmail=(credential.user&&credential.user.email||'').toLowerCase();
+    if(signedEmail!==email.toLowerCase()){
+      await auth.signOut();
+      throw new Error('ACCOUNT_MISMATCH');
+    }
+    state.account=acc;
+    appUnlocked=true;
+    rememberSession(acc);
+    $('loginPassword').value='';
+    $('loginPage').classList.add('hidden');
+    $('appPage').classList.remove('hidden');
+    initApp();
+  }catch(error){
+    console.error('Firebase login failed:',error);
+    errorBox.textContent=authErrorMessage(error);
+  }
+}
+function clearLocalSession(){
+  localStorage.removeItem('vatAccount');
+  localStorage.removeItem('vatAuthUntil');
+}
+function showLoginPage(){
+  appUnlocked=false;
+  if(activeDbRef){activeDbRef.off();activeDbRef=null}
+  state.account=null;
+  state.data={chiusure:{},fatture:{},iva:{}};
+  clearLocalSession();
+  $('appPage').classList.add('hidden');
+  $('loginPage').classList.remove('hidden');
+  $('loginPassword').value='';
+  updateLangButtons();
+}
+function lockApp(force=false){
+  if(!force&&appUnlocked&&state.account){rememberSession(state.account);return}
+  showLoginPage();
+}
+async function logout(){
+  try{await auth.signOut()}finally{showLoginPage()}
+}
+function restoreSession(){
+  auth.onAuthStateChanged(user=>{
+    if(!user){
+      showLoginPage();
+      return;
+    }
+    const acc=EMAIL_ACCOUNTS[(user.email||'').toLowerCase()];
+    if(!acc){
+      auth.signOut();
+      showLoginPage();
+      return;
+    }
+    state.account=acc;
+    appUnlocked=true;
+    rememberSession(acc);
+    $('loginAccount').value=acc;
+    $('loginPage').classList.add('hidden');
+    $('appPage').classList.remove('hidden');
+    initApp();
+  });
+  return true;
+}
+function checkSession(){
+  if(appUnlocked&&Number(localStorage.vatAuthUntil||0)<=Date.now()){
+    logout();
+  }
+}
 function initApp(){applyTheme();renderNav();$('sideAccount').textContent=state.account;$('accountSub').textContent=state.account;$('brandTitle').textContent=state.account;$('adminLabel').textContent=tx('管理员');updateTodayText();startAutoDateRefresh();state.chiusuraDate=state.chiusuraDate||todayISO();state.fatturaDate=state.fatturaDate||todayISO();listenData()}
 function toggleSidebar(){$('sidebar').classList.toggle('open')}
 function applyTheme(){document.documentElement.setAttribute('data-theme',localStorage.vatTheme||'light')}
 function toggleTheme(){localStorage.vatTheme=(document.documentElement.getAttribute('data-theme')==='dark')?'light':'dark';applyTheme()}
-function listenData(){if(activeDbRef)activeDbRef.off();activeDbRef=db.ref('vatManagement/'+state.account);activeDbRef.on('value',snap=>{if(!appUnlocked||!state.account)return;state.data=snap.val()||{chiusure:{},fatture:{},iva:{}};const el=document.activeElement,editing=el&&['INPUT','TEXTAREA','SELECT'].includes(el.tagName);if(!editing)render()})}
+function listenData(){
+  if(activeDbRef)activeDbRef.off();
+  activeDbRef=db.ref('vatManagement/'+state.account);
+  activeDbRef.on('value',snap=>{
+    if(!appUnlocked||!state.account)return;
+    state.data=snap.val()||{chiusure:{},fatture:{},iva:{}};
+    const el=document.activeElement,editing=el&&['INPUT','TEXTAREA','SELECT'].includes(el.tagName);
+    if(!editing)render();
+  },error=>{
+    console.error('Database read failed:',error);
+    alert(currentLang==='it'?'Accesso al database negato. Controlla le regole Firebase.':'数据库访问被拒绝，请检查 Firebase Rules');
+  });
+}
 function save(path,val){return db.ref('vatManagement/'+state.account+'/'+path).set(val)}
 const menus=[['Dashboard','dashboard'],['Chiusure','point_of_sale'],['Fatture','receipt_long'],['Ricezione','move_to_inbox'],['Fornitori','warehouse'],['IVA','percent'],['Monthly','calendar_month'],['Quarterly','date_range'],['Report','analytics']],labels={Dashboard:'总览',Chiusure:'营业额',Fatture:'发票',Ricezione:'收到记录',Fornitori:'供应商',IVA:'IVA',Monthly:'月记录',Quarterly:'季度记录',Report:'报表'};function renderNav(){$('nav').innerHTML=menus.map(([m,ic])=>`<button class="${state.page===m?'active':''}" onclick="state.page='${m}';renderNav();render();toggleSidebar()"><span class="material-symbols-rounded">${ic}</span>${tx(labels[m])}</button>`).join('')}function render(){$('pageTitle').textContent=tx(labels[state.page]);const v=$('view');if(state.page==='Dashboard')v.innerHTML=dashboardHTML();if(state.page==='Chiusure')v.innerHTML=chiusureHTML();if(state.page==='Fatture')v.innerHTML=fattureHTML();if(state.page==='Ricezione')v.innerHTML=ricezioneHTML();if(state.page==='Fornitori')v.innerHTML=fornitoriHTML();if(state.page==='IVA')v.innerHTML=ivaHTML();if(state.page==='Monthly')v.innerHTML=monthlyHTML();if(state.page==='Quarterly')v.innerHTML=quarterlyHTML();if(state.page==='Report')v.innerHTML=reportHTML()}
 function invoiceDate(r){return normalizeDateValue((r&&r.emissione)||((r&&r.data)||''))}
