@@ -14338,4 +14338,101 @@ dashboardHTML = function(){
 if(typeof appUnlocked!=='undefined'&&appUnlocked&&state.account){ setTimeout(render,0); }
 </script>
 
+
+
+<!-- V60: compact 2-column mobile KPI layout -->
+<style>
+@media(max-width:600px){
+  .v58-kpi-wrap{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+    margin:8px 0 12px!important;
+  }
+  .v58-kpi-card{
+    min-height:86px!important;
+    padding:9px 10px!important;
+    border-radius:16px!important;
+    gap:8px!important;
+    align-items:flex-start!important;
+    overflow:hidden!important;
+  }
+  .v58-kpi-icon{
+    width:34px!important;
+    height:34px!important;
+    border-radius:11px!important;
+    flex:0 0 34px!important;
+  }
+  .v58-kpi-icon .material-symbols-rounded{font-size:19px!important}
+  .v58-kpi-body{min-width:0!important}
+  .v58-kpi-head{gap:4px!important;align-items:flex-start!important}
+  .v58-kpi-title{
+    font-size:9.8px!important;
+    line-height:1.15!important;
+    min-width:0!important;
+  }
+  .v58-kpi-info{
+    width:18px!important;
+    height:18px!important;
+    flex:0 0 18px!important;
+  }
+  .v58-kpi-info .material-symbols-rounded{font-size:12px!important}
+  .v58-kpi-value{
+    font-size:15.5px!important;
+    line-height:1.05!important;
+    margin-top:4px!important;
+    letter-spacing:-.02em!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  .v58-kpi-sub{
+    font-size:8.2px!important;
+    line-height:1.2!important;
+    margin-top:3px!important;
+    display:-webkit-box!important;
+    -webkit-line-clamp:2!important;
+    -webkit-box-orient:vertical!important;
+    overflow:hidden!important;
+  }
+  .v58-kpi-status{justify-content:flex-start!important}
+  .v58-status-big{
+    font-size:12.5px!important;
+    line-height:1.05!important;
+    margin-top:3px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  .v58-status-small{
+    font-size:11.5px!important;
+    line-height:1.05!important;
+    margin-top:3px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  /* keep the rest of Dashboard visually compact too */
+  .v40-section{margin-top:10px!important}
+  .v40-section-title{margin-bottom:6px!important}
+  .v40-section-title b{font-size:12px!important}
+  .v40-section-title .material-symbols-rounded{font-size:17px!important}
+  .v52-real-card,.v52-link-card,.v32-pie-card,.v40-store-card,.v26-trend-card,.v32-invoices-card{
+    border-radius:16px!important;
+  }
+}
+
+@media(max-width:380px){
+  .v58-kpi-wrap{gap:6px!important}
+  .v58-kpi-card{padding:8px!important;gap:6px!important;min-height:82px!important}
+  .v58-kpi-icon{width:30px!important;height:30px!important;flex-basis:30px!important}
+  .v58-kpi-icon .material-symbols-rounded{font-size:17px!important}
+  .v58-kpi-title{font-size:9px!important}
+  .v58-kpi-value{font-size:14px!important}
+  .v58-kpi-sub{font-size:7.7px!important}
+  .v58-kpi-info{width:16px!important;height:16px!important;flex-basis:16px!important}
+  .v58-kpi-info .material-symbols-rounded{font-size:11px!important}
+}
+</style>
+
 </body></html>
