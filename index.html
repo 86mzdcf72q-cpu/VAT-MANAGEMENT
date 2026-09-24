@@ -13992,4 +13992,350 @@ state.data = v56StripAccountantFromDataObject(state.data||{});
 if(typeof appUnlocked!=='undefined'&&appUnlocked&&state.account){ setTimeout(render,0); }
 </script>
 
+
+
+<!-- V57: show required invoice amount to offset current IVA debito -->
+<style>
+.v57-offset-note{margin-top:10px;padding:10px 12px;border-radius:14px;border:1px solid #fed7aa;background:#fff7ed;color:#9a3412}
+.v57-offset-head{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:900;margin-bottom:6px}
+.v57-offset-head .material-symbols-rounded{font-size:18px;color:#ea580c}
+.v57-offset-text{font-size:10.5px;line-height:1.45;font-weight:850}
+.v57-offset-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+.v57-offset-box{background:#fff;border:1px solid #fdba74;border-radius:12px;padding:8px 9px;min-width:0}
+.v57-offset-box small{display:block;font-size:9px;color:#9a3412;font-weight:900;margin-bottom:4px}
+.v57-offset-box b{display:block;font-size:13px;line-height:1.25;word-break:break-word}
+@media(max-width:600px){
+ .v57-offset-note{padding:8px 9px;border-radius:12px;margin-top:8px}
+ .v57-offset-head{font-size:10px;margin-bottom:5px}
+ .v57-offset-text{font-size:9.5px}
+ .v57-offset-grid{grid-template-columns:1fr;gap:6px;margin-top:6px}
+ .v57-offset-box{padding:7px 8px;border-radius:10px}
+ .v57-offset-box small{font-size:8.5px}
+ .v57-offset-box b{font-size:12px}
+}
+</style>
+<script>
+Object.assign(it,{
+  '还需发票才可抵完':'Fatture ancora necessarie per azzerare l’IVA dovuta',
+  '还需抵掉的IVA':'IVA ancora da compensare',
+  '对应未税金额':'Imponibile necessario',
+  '对应发票总金额':'Totale fattura necessario',
+  '按当前税率估算':'Stima calcolata con l’aliquota IVA corrente',
+  '若想把当前应缴IVA完全抵掉':'Per azzerare l’IVA dovuta attuale',
+  '大约还需要这些发票':'servono circa queste fatture'
+});
+
+/* enrich IVA summary with needed invoice estimate */
+ivaSummaryFromParts = function(rows,f,chiusura,salesIva,key){
+  const adj=getIvaAdjustment(key);
+  const fattureIva=num(f.imposta);
+  const baseNet=num(salesIva)-fattureIva;
+  const net=baseNet-adj.creditoPrecedente+adj.rettifiche;
+  const ivaDebito=Math.max(0,net);
+  const ivaCredito=Math.max(0,-net);
+  const rate=num(state.data.ivaConfig?.aliquota)||22;
+  const needImp=ivaDebito>0 && rate ? ivaDebito/(rate/100) : 0;
+  const needTot=needImp>0 ? needImp*(1+rate/100) : 0;
+  return {rows,...f,rangeChiusura:num(chiusura),chiusura:num(chiusura),salesIva:num(salesIva),fattureIva,
+    creditoPrecedente:adj.creditoPrecedente,rettifiche:adj.rettifiche,baseNet,net,ivaDebito,ivaCredito,
+    gap:ivaDebito,needImp,needTot,rate,adjustmentKey:key,invoiceCount:(rows||[]).length};
+};
+
+/* override system overview card */
+v52SystemOverviewHTML = function(sys){
+  const s=sys.s;
+  const link=v40StoreLinkSnapshot(sys);
+  const net=sys.linked?num(link.ownAfter):num(sys.ownNet);
+  const status=v28SignedStatus(net);
+  const cls=v52Class(status.kind);
+
+  let linkLabel=tx('当前联动金额'),linkValue=money(link.used||0),linkSub=tx('无实际联动抵扣');
+  if(link.outgoing>0){
+    linkLabel=tx('被另一家店拿去抵扣金额');
+    linkValue=money(link.outgoing);
+    linkSub=`${state.account} → ${link.otherAccount}`;
+  }else if(link.incoming>0){
+    linkLabel=tx('另一家店帮本店抵扣金额');
+    linkValue=money(link.incoming);
+    linkSub=`${link.otherAccount} → ${state.account}`;
+  }
+
+  const debitNote = status.kind==='debit' ? `
+    <div class="v57-offset-note">
+      <div class="v57-offset-head"><span class="material-symbols-rounded">receipt_long</span>${tx('还需发票才可抵完')}</div>
+      <div class="v57-offset-text">${tx('若想把当前应缴IVA完全抵掉')}，${tx('按当前税率估算')}（${num(s.rate)||22}%），${tx('大约还需要这些发票')}：</div>
+      <div class="v57-offset-grid">
+        <div class="v57-offset-box"><small>${tx('还需抵掉的IVA')}</small><b>${money(Math.max(0,num(s.gap)||num(s.ivaDebito)||0))}</b></div>
+        <div class="v57-offset-box"><small>${tx('对应未税金额')}</small><b>${money(num(s.needImp)||0)}</b></div>
+        <div class="v57-offset-box"><small>${tx('对应发票总金额')}</small><b>${money(num(s.needTot)||0)}</b></div>
+      </div>
+    </div>` : '';
+
+  return `<div class="v52-system-overview">
+    <div class="v52-system-hero">
+      <div class="v52-real-card">
+        <div class="v52-real-head">
+          <div class="v52-title">
+            <div class="v52-icon ${cls}"><span class="material-symbols-rounded">${status.kind==='credit'?'savings':status.kind==='debit'?'payments':'task_alt'}</span></div>
+            <div><div class="v52-kicker">${tx('系统完全独立')}</div><div class="v52-real-title">${tx('实时系统余额')}</div></div>
+          </div>
+          <span class="v52-status ${cls}">${status.label}</span>
+        </div>
+        <div class="v52-real-value ${cls}">${signedIvaLabel(net)}</div>
+        <div class="v52-real-bottom">
+          <div class="v52-mini-result"><small>${tx('本店抵扣前IVA')}</small><b>${signedIvaLabel(link.ownBefore)}</b></div>
+          <div class="v52-mini-result"><small>${tx('实际联动金额')}</small><b>${money(link.used||0)}</b></div>
+          <div class="v52-mini-result"><small>${tx('本店剩余金额')}</small><b>${signedIvaLabel(link.ownAfter)}</b></div>
+        </div>
+        ${debitNote}
+      </div>
+
+      <div class="v52-link-card">
+        <div class="v52-icon blue"><span class="material-symbols-rounded">sync_alt</span></div>
+        <div class="v52-link-content">
+          <div class="v52-link-label">${linkLabel}</div>
+          <div class="v52-link-value">${linkValue}</div>
+          <div class="v52-link-sub">${linkSub}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="v52-basic-grid">
+      ${v52BasicCard('blue','point_of_sale',tx('营业额'),money(s.rangeChiusura))}
+      ${v52BasicCard('purple','percent',tx('销项IVA'),money(s.salesIva))}
+      ${v52BasicCard('green','receipt_long',tx('可抵扣进项IVA'),money(s.fattureIva))}
+      ${v52BasicCard('teal','folder_open',tx('发票金额'),money(s.totale))}
+    </div>
+  </div>`;
+};
+
+if(typeof appUnlocked!=='undefined'&&appUnlocked&&state.account){ setTimeout(render,0); }
+</script>
+
+
+
+<!-- V58: add screenshot-style KPI cards to Dashboard overview -->
+<style>
+.v58-kpi-wrap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:14px 0 18px}
+.v58-kpi-card{background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:26px;padding:18px 18px;display:flex;gap:14px;align-items:flex-start;min-width:0}
+.v58-kpi-icon{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;flex:0 0 auto}
+.v58-kpi-icon .material-symbols-rounded{font-size:31px}
+.v58-kpi-icon.blue{background:#dbeafe;color:#2563eb}
+.v58-kpi-icon.purple{background:#f3e8ff;color:#7c3aed}
+.v58-kpi-icon.green{background:#dcfce7;color:#16a34a}
+.v58-kpi-icon.orange{background:#ffedd5;color:#ea580c}
+.v58-kpi-icon.teal{background:#d1fae5;color:#059669}
+.v58-kpi-icon.red{background:#fee2e2;color:#ef4444}
+.v58-kpi-body{min-width:0;flex:1}
+.v58-kpi-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.v58-kpi-title{font-size:14px;font-weight:900;line-height:1.2;color:#475569}
+.v58-kpi-info{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#eef2ff;color:#2563eb;flex:0 0 auto}
+.v58-kpi-info .material-symbols-rounded{font-size:18px}
+.v58-kpi-value{font-size:28px;line-height:1.08;font-weight:900;margin-top:8px;word-break:break-word;color:#0f172a}
+.v58-kpi-sub{font-size:10.5px;color:#64748b;line-height:1.35;font-weight:850;margin-top:4px}
+.v58-kpi-status{display:flex;flex-direction:column;justify-content:center}
+.v58-kpi-status .v58-kpi-value{margin-top:2px}
+.v58-status-big{font-size:17px;font-weight:950;line-height:1.1;color:#0f172a}
+.v58-status-big.credit{color:#16a34a}.v58-status-big.debit{color:#dc2626}.v58-status-big.flat{color:#475569}
+.v58-status-small{font-size:16px;font-weight:900;line-height:1.15;color:#64748b;margin-top:2px}
+@media(max-width:820px){.v58-kpi-wrap{grid-template-columns:1fr}}
+@media(max-width:600px){
+  .v58-kpi-wrap{gap:10px;margin:10px 0 14px}
+  .v58-kpi-card{padding:14px;border-radius:18px;gap:10px}
+  .v58-kpi-icon{width:45px;height:45px;border-radius:14px}
+  .v58-kpi-icon .material-symbols-rounded{font-size:24px}
+  .v58-kpi-title{font-size:12px}
+  .v58-kpi-info{width:24px;height:24px}.v58-kpi-info .material-symbols-rounded{font-size:15px}
+  .v58-kpi-value{font-size:18px;margin-top:6px}
+  .v58-kpi-sub{font-size:9px}
+  .v58-status-big{font-size:14px}.v58-status-small{font-size:13px}
+}
+</style>
+<script>
+Object.assign(it,{
+  '概览数据卡片':'Schede riepilogative',
+  '要付多少IVA':'IVA da pagare',
+  '缺多少发票':'Fatture mancanti',
+  '缺多少未税金额':'Imponibile mancante',
+  '状态':'Stato',
+  '本季度':'Questo trimestre',
+  '已录入发票的IVA':'IVA delle fatture registrate',
+  '营业额产生的IVA':'IVA generata dal fatturato',
+  '当前需要缴纳的IVA':'IVA attualmente da versare',
+  '大约还需补多少含税发票':'Totale fatture IVA inclusa ancora necessario',
+  '大约还需补多少未税金额':'Imponibile ancora necessario',
+  '当前已录入发票总金额':'Totale fatture registrate',
+  '还要付IVA':'IVA ancora da pagare'
+});
+
+function v58OverviewCardsHTML(s){
+  const status = s.ivaDebito>0 ? {kind:'debit',label:tx('还要付IVA'),amount:money(s.ivaDebito)} : s.ivaCredito>0 ? {kind:'credit',label:tx('可抵扣IVA'),amount:money(s.ivaCredito)} : {kind:'flat',label:tx('已平'),amount:money(0)};
+  const card=(iconColor,icon,title,value,sub,extraCls='')=>`<div class="v58-kpi-card ${extraCls}">
+    <div class="v58-kpi-icon ${iconColor}"><span class="material-symbols-rounded">${icon}</span></div>
+    <div class="v58-kpi-body">
+      <div class="v58-kpi-head"><div class="v58-kpi-title">${title}</div><div class="v58-kpi-info"><span class="material-symbols-rounded">info</span></div></div>
+      <div class="v58-kpi-value">${value}</div>
+      <div class="v58-kpi-sub">${sub||''}</div>
+    </div>
+  </div>`;
+  const statusCard=`<div class="v58-kpi-card">
+    <div class="v58-kpi-icon orange"><span class="material-symbols-rounded">task_alt</span></div>
+    <div class="v58-kpi-body v58-kpi-status">
+      <div class="v58-kpi-head"><div class="v58-kpi-title">${tx('状态')}</div><div class="v58-kpi-info"><span class="material-symbols-rounded">info</span></div></div>
+      <div class="v58-status-big ${status.kind}">${status.label}</div>
+      <div class="v58-status-small">${status.amount}</div>
+    </div>
+  </div>`;
+  return `<div class="v58-kpi-wrap">
+    ${card('blue','point_of_sale',tx('营业额'),money(s.rangeChiusura),tx('本季度'))}
+    ${card('purple','percent',tx('营业额IVA'),money(s.salesIva),tx('营业额产生的IVA'))}
+    ${card('green','receipt_long',tx('发票IVA'),money(s.fattureIva),tx('已录入发票的IVA'))}
+    ${card('orange','payments',tx('要付多少IVA'),money(s.ivaDebito),tx('当前需要缴纳的IVA'))}
+    ${card('orange','request_quote',tx('缺多少发票'),money(s.needTot||0),tx('大约还需补多少含税发票'))}
+    ${card('blue','calculate',tx('缺多少未税金额'),money(s.needImp||0),tx('大约还需补多少未税金额'))}
+    ${card('teal','folder_open',tx('发票金额'),money(s.totale),tx('当前已录入发票总金额'))}
+    ${statusCard}
+  </div>`;
+}
+
+dashboardHTML = function(){
+  const sys=v38SystemSnapshot();
+  const s=sys.s;
+  const ownMetrics={revenue:num(s.rangeChiusura),salesIva:num(s.salesIva),purchaseIva:num(s.fattureIva),invoiceTotal:num(s.totale)};
+  return `<div class="dash-mobile">
+    ${tabs()}
+    ${v58OverviewCardsHTML(s)}
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">dashboard</span><b>${tx('本店信息')}</b></div>
+      ${v52SystemOverviewHTML(sys)}
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">donut_large</span><b>${tx('系统联动派')}</b></div>
+      <div style="position:relative">${v38SystemPieHTML(sys)}<button class="v34-detail-btn" style="position:absolute;right:18px;top:58px;z-index:2" onclick="openOverviewDetailModal('system_iva')"><span class="material-symbols-rounded" style="font-size:16px">open_in_new</span>${tx('查看详情')}</button></div>
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">storefront</span><b>${tx('本店联动明细')}</b></div>
+      <div style="position:relative">${v40StoreLinkedPieHTML(sys)}<button class="v34-detail-btn" style="position:absolute;right:18px;top:58px;z-index:2" onclick="openOverviewDetailModal('store_link_iva')"><span class="material-symbols-rounded" style="font-size:16px">open_in_new</span>${tx('查看详情')}</button></div>
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">monitoring</span><b>${tx('经营概览')}</b></div>
+      <div class="v40-operating-grid">${v25MetricsBlock(tx('本店数据'),'storefront',ownMetrics)}${v26TrendCardHTML(false)}</div>
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">receipt_long</span><b>${tx('发票动态')}</b></div>
+      ${v32RecentInvoicesHTML(s)}
+    </section>
+  </div>`;
+};
+
+if(typeof appUnlocked!=='undefined'&&appUnlocked&&state.account){ setTimeout(render,0); }
+</script>
+
+
+
+<!-- V59: smart overview cards based on linked-offset result -->
+<script>
+Object.assign(it,{
+  '已抵扣IVA':'IVA già compensata',
+  '关联店已帮本店抵扣的IVA':'IVA già compensata dall’altro negozio per questo negozio',
+  '联动后仍需缴纳的IVA':'IVA ancora da versare dopo la compensazione',
+  '按联动后剩余应缴估算':'Stima basata sul debito residuo dopo compensazione',
+  '联动后已无需补票':'Dopo la compensazione non servono altre fatture',
+  '关联店无法继续抵扣后仍需缴纳':'IVA ancora da versare quando l’altro negozio non riesce a compensare oltre',
+  '联动后状态':'Stato dopo compensazione'
+});
+
+v58OverviewCardsHTML = function(s, sys=v38SystemSnapshot()){
+  const link=v40StoreLinkSnapshot(sys);
+  const linkedNet = sys.linked ? num(link.ownAfter) : num(sys.ownNet);
+  const remain = v28SignedStatus(linkedNet);
+  const rate = num(s.rate)||22;
+  const remainingDebito = remain.kind==='debit' ? num(remain.amount) : 0;
+  const remainingNeedImp = remainingDebito>0 && rate ? remainingDebito/(rate/100) : 0;
+  const remainingNeedTot = remainingNeedImp>0 ? remainingNeedImp*(1+rate/100) : 0;
+
+  const status = remain.kind==='debit'
+    ? {kind:'debit',label:tx('还要付IVA'),amount:money(remainingDebito)}
+    : remain.kind==='credit'
+      ? {kind:'credit',label:tx('可抵扣IVA'),amount:money(remain.amount)}
+      : {kind:'flat',label:tx('已平'),amount:money(0)};
+
+  const card=(iconColor,icon,title,value,sub,extraCls='')=>`<div class="v58-kpi-card ${extraCls}">
+    <div class="v58-kpi-icon ${iconColor}"><span class="material-symbols-rounded">${icon}</span></div>
+    <div class="v58-kpi-body">
+      <div class="v58-kpi-head"><div class="v58-kpi-title">${title}</div><div class="v58-kpi-info"><span class="material-symbols-rounded">info</span></div></div>
+      <div class="v58-kpi-value">${value}</div>
+      <div class="v58-kpi-sub">${sub||''}</div>
+    </div>
+  </div>`;
+
+  const offsetOrPayCard = link.incoming>0
+    ? card('green','sync_alt',tx('已抵扣IVA'),money(link.incoming),tx('关联店已帮本店抵扣的IVA'))
+    : card('orange','payments',tx('要付多少IVA'),money(remainingDebito),tx('联动后仍需缴纳的IVA'));
+
+  const missingInvoiceSub = remainingDebito>0 ? tx('按联动后剩余应缴估算') : tx('联动后已无需补票');
+  const missingUntaxedSub = remainingDebito>0 ? tx('按联动后剩余应缴估算') : tx('联动后已无需补票');
+
+  const statusCard=`<div class="v58-kpi-card">
+    <div class="v58-kpi-icon orange"><span class="material-symbols-rounded">task_alt</span></div>
+    <div class="v58-kpi-body v58-kpi-status">
+      <div class="v58-kpi-head"><div class="v58-kpi-title">${tx('状态')}</div><div class="v58-kpi-info"><span class="material-symbols-rounded">info</span></div></div>
+      <div class="v58-status-big ${status.kind}">${status.label}</div>
+      <div class="v58-status-small">${status.amount}</div>
+    </div>
+  </div>`;
+
+  return `<div class="v58-kpi-wrap">
+    ${card('blue','point_of_sale',tx('营业额'),money(s.rangeChiusura),tx('本季度'))}
+    ${card('purple','percent',tx('营业额IVA'),money(s.salesIva),tx('营业额产生的IVA'))}
+    ${card('green','receipt_long',tx('发票IVA'),money(s.fattureIva),tx('已录入发票的IVA'))}
+    ${offsetOrPayCard}
+    ${card('orange','request_quote',tx('缺多少发票'),money(remainingNeedTot),missingInvoiceSub)}
+    ${card('blue','calculate',tx('缺多少未税金额'),money(remainingNeedImp),missingUntaxedSub)}
+    ${card('teal','folder_open',tx('发票金额'),money(s.totale),tx('当前已录入发票总金额'))}
+    ${statusCard}
+  </div>`;
+};
+
+dashboardHTML = function(){
+  const sys=v38SystemSnapshot();
+  const s=sys.s;
+  const ownMetrics={revenue:num(s.rangeChiusura),salesIva:num(s.salesIva),purchaseIva:num(s.fattureIva),invoiceTotal:num(s.totale)};
+  return `<div class="dash-mobile">
+    ${tabs()}
+    ${v58OverviewCardsHTML(s, sys)}
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">dashboard</span><b>${tx('本店信息')}</b></div>
+      ${v52SystemOverviewHTML(sys)}
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">donut_large</span><b>${tx('系统联动派')}</b></div>
+      <div style="position:relative">${v38SystemPieHTML(sys)}<button class="v34-detail-btn" style="position:absolute;right:18px;top:58px;z-index:2" onclick="openOverviewDetailModal('system_iva')"><span class="material-symbols-rounded" style="font-size:16px">open_in_new</span>${tx('查看详情')}</button></div>
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">storefront</span><b>${tx('本店联动明细')}</b></div>
+      <div style="position:relative">${v40StoreLinkedPieHTML(sys)}<button class="v34-detail-btn" style="position:absolute;right:18px;top:58px;z-index:2" onclick="openOverviewDetailModal('store_link_iva')"><span class="material-symbols-rounded" style="font-size:16px">open_in_new</span>${tx('查看详情')}</button></div>
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">monitoring</span><b>${tx('经营概览')}</b></div>
+      <div class="v40-operating-grid">${v25MetricsBlock(tx('本店数据'),'storefront',ownMetrics)}${v26TrendCardHTML(false)}</div>
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">receipt_long</span><b>${tx('发票动态')}</b></div>
+      ${v32RecentInvoicesHTML(s)}
+    </section>
+  </div>`;
+};
+
+if(typeof appUnlocked!=='undefined'&&appUnlocked&&state.account){ setTimeout(render,0); }
+</script>
+
 </body></html>
