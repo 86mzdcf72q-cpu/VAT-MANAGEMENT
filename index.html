@@ -11744,4 +11744,1004 @@ if(typeof appUnlocked!=='undefined'&&appUnlocked&&state.account){setTimeout(rend
 }
 </style>
 
+
+
+<!-- V42: dashboard reorder with store info first and clearer linked IVA labels -->
+<style>
+.v42-summary-wrap .grid.cards{margin-top:0}
+.v42-summary-wrap .grid.cards + .grid.cards{margin-top:12px}
+.v42-section-note{color:var(--muted);font-size:12px;font-weight:800;margin-top:2px}
+.v42-pie-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media(max-width:1100px){.v42-pie-grid{grid-template-columns:1fr}}
+</style>
+<script>
+Object.assign(it,{
+  '本店信息':'Dati del negozio',
+  '系统联动派':'Compensazione IVA di sistema',
+  '系统联动结果':'Risultato collegato del sistema',
+  '派中心状态':'Stato centrale donut'
+});
+
+const _v42SystemPieBase = v38SystemPieHTML;
+v38SystemPieHTML = function(sys){
+  const sales=Math.abs(num(sys.s.salesIva));
+  const purchase=Math.abs(num(sys.s.fattureIva));
+  const remain=Math.abs(num(sys.status.amount));
+  const total=sales+purchase+remain;
+  let bg='conic-gradient(#e5e7eb 0 100%)';
+  if(total>0){
+    const p1=sales/total*100;
+    const p2=purchase/total*100;
+    const end2=p1+p2;
+    const statusColor=sys.status.kind==='debit'?'#ef4444':sys.status.kind==='credit'?'#16a34a':'#94a3b8';
+    bg=`conic-gradient(#60a5fa 0 ${p1}%, #22c55e ${p1}% ${end2}%, ${statusColor} ${end2}% 100%)`;
+  }
+  const cls=sys.status.kind==='debit'?'debit':sys.status.kind==='credit'?'credit':'flat';
+  const centerLabel = `${sys.status.label}\n${money(sys.status.amount)}`;
+  const finalLabel = sys.linked ? tx('系统联动后IVA') : tx('系统本店IVA');
+  const finalValue = sys.linked ? signedIvaLabel(sys.finalNet) : signedIvaLabel(sys.ownNet);
+  return `<div class="v32-pie-card">
+    <div class="v32-pie-head">
+      <div><h3>${tx('系统联动派')}</h3><small>${state.account} · ${periodName()}</small></div>
+      <span class="v32-scope-chip v38-system-chip">${tx('系统独立计算')}</span>
+    </div>
+    <div class="v32-pie-inner">
+      <div class="v32-donut ${cls}" style="background:${bg}" data-label="${centerLabel}"></div>
+      <div>
+        <div class="v32-legend">
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded" style="color:#60a5fa">percent</span>${tx('销项IVA')}</span><b>${money(sys.s.salesIva)}</b></div>
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded" style="color:#22c55e">receipt_long</span>${tx('可抵扣进项IVA')}</span><b>${money(sys.s.fattureIva)}</b></div>
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded">description</span>${tx('发票金额')}</span><b>${money(sys.s.totale)}</b></div>
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded">storefront</span>${tx('系统本店IVA')}</span><b>${signedIvaLabel(sys.ownNet)}</b></div>
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded" style="color:#2563eb">sync_alt</span>${finalLabel}</span><b>${finalValue}</b></div>
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded ${cls==='debit'?'v32-status-debit':cls==='credit'?'v32-status-credit':'v32-status-flat'}">info</span>${tx('IVA状态')}</span><b class="${cls==='debit'?'v32-status-debit':cls==='credit'?'v32-status-credit':'v32-status-flat'}">${sys.status.label}</b></div>
+        </div>
+        <div class="v38-rule-note">${tx('系统始终按全部系统数据独立计算')}。${currentLang==='it'?'Nel donut e nelle righe vengono mostrati chiaramente “IVA a credito” o “IVA a debito”.':'派图中心和明细行都会清楚标明“可抵扣IVA”或“应缴IVA”。'}</div>
+      </div>
+    </div>
+  </div>`;
+};
+
+const _v42DashboardBase = dashboardHTML;
+dashboardHTML = function(){
+  const sys=v38SystemSnapshot();
+  const acc=v38AccountantSnapshot();
+  const s=sys.s;
+  const ownMetrics={revenue:num(s.rangeChiusura),salesIva:num(s.salesIva),purchaseIva:num(s.fattureIva),invoiceTotal:num(s.totale)};
+  return `<div class="v24-dashboard v32-dashboard-wrap">
+    ${tabs()}
+
+    <section class="v40-section v42-summary-wrap">
+      <div class="v40-section-title"><span class="material-symbols-rounded">dashboard</span><b>${tx('本店信息')}</b></div>
+      ${summaryCards(s)}
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">sync_alt</span><b>${tx('系统联动派')}</b></div>
+      <div class="v42-section-note">${currentLang==='it'?'Mostra in modo chiaro se il risultato del sistema è IVA a credito o IVA a debito.':'清楚显示系统联动后到底是可抵扣 IVA 还是应缴 IVA。'}</div>
+      <div style="position:relative">${v38SystemPieHTML(sys)}<button class="v34-detail-btn" style="position:absolute;right:18px;top:58px;z-index:2" onclick="openOverviewDetailModal('system_iva')"><span class="material-symbols-rounded" style="font-size:16px">open_in_new</span>${tx('查看详情')}</button></div>
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">verified_user</span><b>${tx('会计师IVA')}</b></div>
+      <div style="position:relative">${v38AccountantPieHTML(acc)}<button class="v34-detail-btn" style="position:absolute;right:18px;top:58px;z-index:2" onclick="openOverviewDetailModal('accountant_iva')"><span class="material-symbols-rounded" style="font-size:16px">open_in_new</span>${tx('查看详情')}</button></div>
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">storefront</span><b>${tx('本店联动明细')}</b></div>
+      <div style="position:relative">${v40StoreLinkedPieHTML(sys)}<button class="v34-detail-btn" style="position:absolute;right:18px;top:58px;z-index:2" onclick="openOverviewDetailModal('store_link_iva')"><span class="material-symbols-rounded" style="font-size:16px">open_in_new</span>${tx('查看详情')}</button></div>
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">monitoring</span><b>${tx('经营概览')}</b></div>
+      <div class="v40-operating-grid">
+        ${v25MetricsBlock(tx('本店数据'),'storefront',ownMetrics)}
+        ${v26TrendCardHTML(false)}
+      </div>
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">receipt_long</span><b>${tx('发票动态')}</b></div>
+      ${v32RecentInvoicesHTML(s)}
+    </section>
+  </div>`;
+};
+
+if(typeof appUnlocked!=='undefined'&&appUnlocked&&state.account){setTimeout(render,0)}
+</script>
+
+
+
+<!-- V43: add used/remaining/accountant amounts with mobile-friendly layout -->
+<style>
+.v43-acct-row b{word-break:break-word}
+.v43-remaining-row span,.v43-remaining-row b{font-weight:900}
+@media(max-width:600px){
+  .v32-legend-row{gap:8px!important}
+  .v32-legend-row span{font-size:12px!important;line-height:1.25!important}
+  .v32-legend-row b{font-size:12.5px!important;line-height:1.25!important}
+  .v40-store-note,.v38-rule-note{font-size:9.5px!important;line-height:1.45!important}
+}
+</style>
+<script>
+Object.assign(it,{
+  '被拿去抵扣金额':'Importo usato per compensare l’altro negozio',
+  '另一家店帮本店抵扣金额':'Importo con cui l’altro negozio compensa questo negozio',
+  '本店剩余金额':'Importo residuo del negozio',
+  '会计师金额':'Importo commercialista',
+  '会计师当前IVA':'IVA attuale commercialista'
+});
+
+const _v43StorePieBase = v40StoreLinkedPieHTML;
+v40StoreLinkedPieHTML = function(sys=v38SystemSnapshot()){
+  const link=v40StoreLinkSnapshot(sys);
+  const beforeStatus=v28SignedStatus(link.ownBefore);
+  const afterStatus=v28SignedStatus(link.ownAfter);
+  const acc=v38AccountantSnapshot();
+  const accText = acc.has ? signedIvaLabel(acc.auth.effectiveNet) : tx('未填写');
+  const cls=afterStatus.kind==='debit'?'debit':afterStatus.kind==='credit'?'credit':'flat';
+  const beforeAbs=Math.abs(num(link.ownBefore));
+  const usedAbs=Math.abs(num(link.used));
+  const afterAbs=Math.abs(num(link.ownAfter));
+  const total=beforeAbs+usedAbs+afterAbs;
+  let bg='conic-gradient(#e5e7eb 0 100%)';
+  if(total>0){
+    const p1=beforeAbs/total*100;
+    const p2=usedAbs/total*100;
+    const end2=p1+p2;
+    const afterColor=afterStatus.kind==='debit'?'#ef4444':afterStatus.kind==='credit'?'#16a34a':'#94a3b8';
+    bg=`conic-gradient(#60a5fa 0 ${p1}%, #8b5cf6 ${p1}% ${end2}%, ${afterColor} ${end2}% 100%)`;
+  }
+
+  let dynamicRow='';
+  let note='';
+  let flowText=tx('无实际联动抵扣');
+  if(link.incoming>0){
+    dynamicRow=`<div class="v32-legend-row v40-link-in"><span><span class="material-symbols-rounded">add_circle</span>${tx('另一家店帮本店抵扣金额')}</span><b>${money(link.incoming)}</b></div>`;
+    flowText=`${link.otherAccount} → ${state.account}`;
+    note=currentLang==='it'
+      ? `${link.otherAccount} ha usato ${money(link.incoming)} del proprio credito IVA per compensare l’IVA di ${state.account}.`
+      : `${link.otherAccount} 拿出 ${money(link.incoming)} 的可抵扣 IVA，实际帮 ${state.account} 抵扣。`;
+  }else if(link.outgoing>0){
+    dynamicRow=`<div class="v32-legend-row v40-link-out"><span><span class="material-symbols-rounded">swap_horiz</span>${tx('被拿去抵扣金额')}</span><b>${money(link.outgoing)}</b></div>`;
+    flowText=`${state.account} → ${link.otherAccount}`;
+    note=currentLang==='it'
+      ? `${money(link.outgoing)} del credito IVA di ${state.account} è stato usato per compensare l’IVA di ${link.otherAccount}.`
+      : `${state.account} 有 ${money(link.outgoing)} 被拿去抵扣 ${link.otherAccount} 的应缴 IVA。`;
+  }else if(link.linked){
+    dynamicRow=`<div class="v32-legend-row v40-link-none"><span><span class="material-symbols-rounded">remove_circle</span>${tx('实际联动金额')}</span><b>${money(0)}</b></div>`;
+    note=currentLang==='it'?'In questo momento non c’è una compensazione incrociata effettiva tra i due negozi.':'当前两个店之间没有发生实际的交叉抵扣。';
+  }else{
+    dynamicRow=`<div class="v32-legend-row v40-link-none"><span><span class="material-symbols-rounded">link_off</span>${tx('实际联动金额')}</span><b>${money(0)}</b></div>`;
+    note=currentLang==='it'?'Questo account non usa la compensazione EMP ↔ SUNSHOP.':'当前账户没有 EMP ↔ SUNSHOP 联动抵扣。';
+  }
+
+  return `<div class="v32-pie-card v40-store-card">
+    <div class="v32-pie-head">
+      <div><h3>${tx('本店专属IVA')}</h3><small>${state.account} · ${periodName()}</small></div>
+      <span class="v40-flow-pill"><span class="material-symbols-rounded" style="font-size:15px">sync_alt</span>${flowText}</span>
+    </div>
+    <div class="v32-pie-inner">
+      <div class="v32-donut ${cls}" style="background:${bg}" data-label="${afterStatus.label}\n${money(afterStatus.amount)}"></div>
+      <div>
+        <div class="v32-legend">
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded" style="color:#60a5fa">storefront</span>${tx('本店抵扣前IVA')}</span><b>${signedIvaLabel(link.ownBefore)}</b></div>
+          ${link.linked?`<div class="v32-legend-row"><span><span class="material-symbols-rounded" style="color:#64748b">store</span>${link.otherAccount} · ${tx('另一家店抵扣前IVA')}</span><b>${signedIvaLabel(link.otherBefore)}</b></div>`:''}
+          ${dynamicRow}
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded" style="color:#8b5cf6">compare_arrows</span>${tx('实际联动金额')}</span><b>${money(link.used)}</b></div>
+          <div class="v32-legend-row v43-remaining-row"><span><span class="material-symbols-rounded ${cls==='debit'?'v32-status-debit':cls==='credit'?'v32-status-credit':'v32-status-flat'}">account_balance_wallet</span>${tx('本店剩余金额')}</span><b class="${cls==='debit'?'v32-status-debit':cls==='credit'?'v32-status-credit':'v32-status-flat'}">${signedIvaLabel(link.ownAfter)}</b></div>
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded ${cls==='debit'?'v32-status-debit':cls==='credit'?'v32-status-credit':'v32-status-flat'}">info</span>${tx('本店联动后状态')}</span><b class="${cls==='debit'?'v32-status-debit':cls==='credit'?'v32-status-credit':'v32-status-flat'}">${afterStatus.label}</b></div>
+          <div class="v32-legend-row v43-acct-row"><span><span class="material-symbols-rounded" style="color:#7c3aed">verified_user</span>${tx('会计师金额')}</span><b>${accText}</b></div>
+        </div>
+        <div class="v40-store-note">${note}<br>${tx('本店专属IVA按系统联动计算')}。</div>
+      </div>
+    </div>
+  </div>`;
+};
+
+const _v43StoreDetailBase = v34OverviewDetailData;
+v34OverviewDetailData = function(type){
+  if(type==='store_link_iva'){
+    const sys=v38SystemSnapshot();
+    const link=v40StoreLinkSnapshot(sys);
+    const after=v28SignedStatus(link.ownAfter);
+    const flow=link.used>0?`${link.from} → ${link.to}`:tx('无实际联动抵扣');
+    const acc=v38AccountantSnapshot();
+    const accText = acc.has ? signedIvaLabel(acc.auth.effectiveNet) : tx('未填写');
+    return {title:tx('本店专属IVA'),sub:`${state.account} · ${periodName()}`,body:v34DetailModalGrid([
+      {label:tx('本店抵扣前IVA'),value:signedIvaLabel(link.ownBefore)},
+      ...(link.linked?[{label:`${link.otherAccount} · ${tx('另一家店抵扣前IVA')}`,value:signedIvaLabel(link.otherBefore)}]:[]),
+      {label:tx('另一家店帮本店抵扣金额'),value:money(link.incoming)},
+      {label:tx('被拿去抵扣金额'),value:money(link.outgoing)},
+      {label:tx('实际联动金额'),value:money(link.used)},
+      {label:tx('抵扣方向'),value:flow},
+      {label:tx('本店剩余金额'),value:signedIvaLabel(link.ownAfter)},
+      {label:tx('本店联动后状态'),value:after.label},
+      {label:tx('会计师金额'),value:accText}
+    ])+`<div class="v34-modal-note">${tx('本店专属IVA按系统联动计算')}。</div>`};
+  }
+  return _v43StoreDetailBase(type);
+};
+
+if(typeof appUnlocked!=='undefined'&&appUnlocked&&state.account){setTimeout(render,0)}
+</script>
+
+
+
+<!-- V44: top store info cards add cross-offset / remaining / accountant estimate / diff -->
+<style>
+.v44-top-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.v44-top-grid .v24-mini-card{height:100%}
+.v44-top-grid .v24-mini-card b{word-break:break-word}
+@media(max-width:1200px){.v44-top-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:900px){.v44-top-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}}
+@media(max-width:600px){
+  .v44-top-grid{grid-template-columns:1fr;gap:10px}
+  .v44-top-grid .v24-mini-card{padding:12px!important;border-radius:18px!important}
+  .v44-top-grid .v24-mini-card b{font-size:16px!important;line-height:1.18!important}
+  .v44-top-grid .v24-mini-card small{font-size:10px!important;line-height:1.3!important}
+}
+</style>
+<script>
+Object.assign(it,{
+  '被另一家店拿去抵扣金额':'Importo usato dall’altro negozio',
+  '实际剩余金额':'Importo residuo effettivo',
+  '会计师预估':'Stima commercialista',
+  '会计师和系统差额':'Differenza commercialista-sistema',
+  '无会计师记录':'Nessun dato commercialista',
+  '系统联动后实际余额':'Saldo reale dopo compensazione di sistema',
+  '会计师当前预估余额':'Saldo stimato attuale del commercialista',
+  '会计师减系统':'Commercialista meno sistema',
+  '另一家店帮我们抵扣':'Importo compensato dall’altro negozio per noi',
+  '若为负数则系统更高':'Se negativo, il sistema è più alto'
+});
+
+function v44SignedDiffLabel(diff){
+  diff=num(diff);
+  if(Math.abs(diff)<0.005)return money(0);
+  const sign=diff>0?'+':'−';
+  return `${sign}${money(Math.abs(diff))}`;
+}
+
+function v44TopStoreInfoHTML(sys=v38SystemSnapshot(), acc=v38AccountantSnapshot()){
+  const s=sys.s;
+  const link=v40StoreLinkSnapshot(sys);
+  const remaining=sys.linked?num(link.ownAfter):num(sys.ownNet);
+  const remStatus=v28SignedStatus(remaining);
+  const accountantHas=!!acc.has;
+  const accountantNet=accountantHas?num(acc.auth.effectiveNet):0;
+  const diff=accountantHas ? accountantNet - num(sys.finalNet) : null;
+  const diffLabel=accountantHas ? v44SignedDiffLabel(diff) : tx('未填写');
+  const diffSub=accountantHas
+    ? `${tx('会计师减系统')} · ${Math.abs(num(diff))<0.005?tx('已平'):num(diff)>0?tx('会计师更高'):tx('系统更高')}`
+    : tx('无会计师记录');
+  const outgoingSub = link.outgoing>0
+    ? `${state.account} → ${link.otherAccount}`
+    : (link.incoming>0 ? `${tx('另一家店帮我们抵扣')} · ${link.otherAccount} → ${state.account}` : tx('无实际联动抵扣'));
+  const accountantLabel=accountantHas?signedIvaLabel(accountantNet):tx('未填写');
+  return `<div class="v44-top-grid">
+    ${v24MiniCard(tx('营业额'),money(s.rangeChiusura),'point_of_sale',periodName())}
+    ${v24MiniCard(tx('销项IVA'),money(s.salesIva),'percent','')}
+    ${v24MiniCard(tx('可抵扣进项IVA'),money(s.fattureIva),'receipt_long','')}
+    ${v24MiniCard(tx('发票金额'),money(s.totale),'folder_open','')}
+    ${v24MiniCard(tx('上期结转可抵扣IVA'),money(num(s.prevCarry||0)),'account_balance_wallet',`${tx('自动结转')}: ${money(num(s.autoCarry||0))}`)}
+    ${v24MiniCard(tx('调整项'),money(num(s.adjustment||0)),'tune','')}
+    ${v24MiniCard(tx('被另一家店拿去抵扣金额'),money(link.outgoing||0),'compare_arrows',outgoingSub)}
+    ${v24MiniCard(tx('实际剩余金额'),money(remStatus.amount),remStatus.kind==='debit'?'payments':remStatus.kind==='credit'?'savings':'task_alt',remStatus.label)}
+    ${v24MiniCard(tx('会计师预估'),accountantLabel,'verified_user',tx('会计师当前预估余额'))}
+    ${v24MiniCard(tx('会计师和系统差额'),diffLabel,'difference',diffSub)}
+  </div>`;
+}
+
+const _v44DashboardBase = dashboardHTML;
+dashboardHTML = function(){
+  const sys=v38SystemSnapshot();
+  const acc=v38AccountantSnapshot();
+  const s=sys.s;
+  const ownMetrics={revenue:num(s.rangeChiusura),salesIva:num(s.salesIva),purchaseIva:num(s.fattureIva),invoiceTotal:num(s.totale)};
+
+  return `<div class="v24-dashboard v32-dashboard-wrap">
+    ${tabs()}
+
+    <section class="v40-section v42-summary-wrap">
+      <div class="v40-section-title"><span class="material-symbols-rounded">dashboard</span><b>${tx('本店信息')}</b></div>
+      ${v44TopStoreInfoHTML(sys,acc)}
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">sync_alt</span><b>${tx('系统联动派')}</b></div>
+      <div class="v42-section-note">${currentLang==='it'?'Mostra in modo chiaro se il risultato del sistema è IVA a credito, IVA a debito o in pareggio.':'清楚显示系统联动后到底是可抵扣 IVA、应缴 IVA，还是已平。'}</div>
+      <div style="position:relative">${v38SystemPieHTML(sys)}<button class="v34-detail-btn" style="position:absolute;right:18px;top:58px;z-index:2" onclick="openOverviewDetailModal('system_iva')"><span class="material-symbols-rounded" style="font-size:16px">open_in_new</span>${tx('查看详情')}</button></div>
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">verified_user</span><b>${tx('会计师IVA')}</b></div>
+      <div style="position:relative">${v38AccountantPieHTML(acc)}<button class="v34-detail-btn" style="position:absolute;right:18px;top:58px;z-index:2" onclick="openOverviewDetailModal('accountant_iva')"><span class="material-symbols-rounded" style="font-size:16px">open_in_new</span>${tx('查看详情')}</button></div>
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">storefront</span><b>${tx('本店联动明细')}</b></div>
+      <div style="position:relative">${v40StoreLinkedPieHTML(sys)}<button class="v34-detail-btn" style="position:absolute;right:18px;top:58px;z-index:2" onclick="openOverviewDetailModal('store_link_iva')"><span class="material-symbols-rounded" style="font-size:16px">open_in_new</span>${tx('查看详情')}</button></div>
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">monitoring</span><b>${tx('经营概览')}</b></div>
+      <div class="v40-operating-grid">
+        ${v25MetricsBlock(tx('本店数据'),'storefront',ownMetrics)}
+        ${v26TrendCardHTML(false)}
+      </div>
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">receipt_long</span><b>${tx('发票动态')}</b></div>
+      ${v32RecentInvoicesHTML(s)}
+    </section>
+  </div>`;
+};
+
+if(typeof appUnlocked!=='undefined'&&appUnlocked&&state.account){setTimeout(render,0)}
+</script>
+
+
+
+<!-- V45: smarter top overview cards, cleaner and mobile-first -->
+<style>
+.v45-overview{display:grid;gap:14px}
+.v45-hero{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(280px,.9fr);gap:14px;align-items:stretch}
+.v45-primary-card,.v45-side-card,.v45-mini-card{background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}
+.v45-primary-card{padding:18px;position:relative;overflow:hidden}
+.v45-primary-card:after{content:'';position:absolute;right:-40px;top:-40px;width:150px;height:150px;border-radius:50%;background:rgba(37,99,235,.06)}
+.v45-primary-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;position:relative;z-index:1}
+.v45-title-wrap{display:flex;align-items:center;gap:12px;min-width:0}
+.v45-icon{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;font-size:24px;flex:0 0 auto}
+.v45-icon.credit{background:#dcfce7;color:#16a34a}
+.v45-icon.debit{background:#fee2e2;color:#ef4444}
+.v45-icon.flat{background:#e2e8f0;color:#64748b}
+.v45-icon.acct{background:#f3e8ff;color:#7c3aed}
+.v45-icon.offset{background:#dbeafe;color:#2563eb}
+.v45-icon.diff{background:#fef3c7;color:#d97706}
+.v45-kicker{font-size:12px;font-weight:900;color:var(--muted);margin-bottom:2px}
+.v45-primary-title{font-size:18px;font-weight:900;line-height:1.2}
+.v45-primary-value{font-size:32px;font-weight:900;line-height:1.05;margin-top:12px;position:relative;z-index:1}
+.v45-primary-value.credit{color:#16a34a}.v45-primary-value.debit{color:#ef4444}.v45-primary-value.flat{color:#334155}
+.v45-status-badge{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:900;white-space:nowrap}
+.v45-status-badge.credit{background:#dcfce7;color:#15803d}.v45-status-badge.debit{background:#fee2e2;color:#dc2626}.v45-status-badge.flat{background:#e2e8f0;color:#475569}
+.v45-primary-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px;position:relative;z-index:1}
+.v45-meta-box{padding:11px 12px;border:1px solid var(--line);border-radius:16px;background:#f8fafc}
+.v45-meta-box small{display:block;color:var(--muted);font-size:10px;font-weight:900;margin-bottom:4px}
+.v45-meta-box b{font-size:14px;line-height:1.25;word-break:break-word}
+.v45-side-stack{display:grid;gap:14px}
+.v45-side-card{padding:16px;display:flex;align-items:flex-start;gap:12px;min-width:0}
+.v45-side-content{min-width:0;flex:1}
+.v45-side-label{font-size:12px;font-weight:900;color:#475569;line-height:1.25}
+.v45-side-value{font-size:24px;font-weight:900;line-height:1.08;margin-top:6px;word-break:break-word}
+.v45-side-value.credit{color:#16a34a}.v45-side-value.debit{color:#ef4444}.v45-side-value.flat{color:#334155}
+.v45-side-sub{margin-top:6px;font-size:11px;color:var(--muted);font-weight:800;line-height:1.35}
+.v45-base-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.v45-mini-card{padding:14px 15px;display:flex;align-items:flex-start;gap:10px}
+.v45-mini-icon{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;flex:0 0 auto}
+.v45-mini-icon.blue{background:#dbeafe;color:#2563eb}.v45-mini-icon.purple{background:#ede9fe;color:#7c3aed}.v45-mini-icon.green{background:#dcfce7;color:#16a34a}.v45-mini-icon.teal{background:#ccfbf1;color:#0f766e}
+.v45-mini-label{font-size:11px;color:#64748b;font-weight:900;line-height:1.2}
+.v45-mini-value{font-size:20px;font-weight:900;line-height:1.1;margin-top:6px;word-break:break-word}
+.v45-mini-sub{margin-top:4px;font-size:10px;color:var(--muted);font-weight:800}
+@media(max-width:1180px){
+  .v45-hero{grid-template-columns:1fr}
+  .v45-side-stack{grid-template-columns:repeat(3,minmax(0,1fr));display:grid}
+}
+@media(max-width:900px){
+  .v45-primary-meta{grid-template-columns:1fr 1fr}
+  .v45-side-stack{grid-template-columns:1fr}
+  .v45-base-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:600px){
+  .v45-overview{gap:10px}
+  .v45-hero{gap:10px}
+  .v45-primary-card,.v45-side-card,.v45-mini-card{border-radius:18px}
+  .v45-primary-card{padding:14px}
+  .v45-icon{width:42px;height:42px;border-radius:14px;font-size:21px}
+  .v45-primary-title{font-size:16px}
+  .v45-primary-value{font-size:24px;margin-top:10px}
+  .v45-status-badge{font-size:11px;padding:6px 10px}
+  .v45-primary-meta{grid-template-columns:1fr;gap:8px;margin-top:10px}
+  .v45-meta-box{padding:9px 10px;border-radius:13px}
+  .v45-meta-box b{font-size:13px}
+  .v45-side-card{padding:13px;gap:10px}
+  .v45-side-value{font-size:20px}
+  .v45-side-sub{font-size:10px}
+  .v45-base-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .v45-mini-card{padding:12px}
+  .v45-mini-icon{width:34px;height:34px;border-radius:12px}
+  .v45-mini-value{font-size:16px}
+  .v45-mini-label{font-size:10px}
+}
+</style>
+<script>
+Object.assign(it,{
+  '一眼总览':'Panoramica rapida',
+  '剩余状态':'Stato residuo',
+  '联动前本店':'Negozio prima della compensazione',
+  '联动后本店':'Negozio dopo la compensazione',
+  '系统结果':'Risultato sistema',
+  '系统更高':'Sistema più alto',
+  '会计师更高':'Commercialista più alto'
+});
+
+function v45StatusClass(kind){ return kind==='debit'?'debit':kind==='credit'?'credit':'flat'; }
+
+function v45DiffInfo(diff){
+  diff=num(diff);
+  if(Math.abs(diff)<0.005){
+    return {value:money(0), sub:tx('已平'), cls:'flat'};
+  }
+  return {
+    value:(diff>0?'+':'−') + money(Math.abs(diff)),
+    sub: diff>0 ? tx('会计师更高') : tx('系统更高'),
+    cls: diff>0 ? 'credit' : 'debit'
+  };
+}
+
+function v45BaseMetricCard(iconClass, icon, label, value, sub=''){
+  return `<div class="v45-mini-card">
+    <div class="v45-mini-icon ${iconClass}"><span class="material-symbols-rounded">${icon}</span></div>
+    <div style="min-width:0;flex:1">
+      <div class="v45-mini-label">${label}</div>
+      <div class="v45-mini-value">${value}</div>
+      ${sub?`<div class="v45-mini-sub">${sub}</div>`:''}
+    </div>
+  </div>`;
+}
+
+function v45SmartStoreInfoHTML(sys=v38SystemSnapshot(), acc=v38AccountantSnapshot()){
+  const s=sys.s;
+  const link=v40StoreLinkSnapshot(sys);
+  const remainingNet=sys.linked?num(link.ownAfter):num(sys.ownNet);
+  const remain=v28SignedStatus(remainingNet);
+  const remainCls=v45StatusClass(remain.kind);
+  const accountantHas=!!acc.has;
+  const accountantNet=accountantHas?num(acc.auth.effectiveNet):0;
+  const accountantLabel=accountantHas?signedIvaLabel(accountantNet):tx('未填写');
+  const diff=accountantHas ? accountantNet - num(sys.finalNet) : 0;
+  const diffInfo=accountantHas ? v45DiffInfo(diff) : {value:tx('未填写'),sub:tx('无会计师记录'),cls:'flat'};
+
+  let offsetLabel=tx('实际联动金额');
+  let offsetValue=money(link.used||0);
+  let offsetSub=tx('无实际联动抵扣');
+  if(link.outgoing>0){
+    offsetLabel=tx('被另一家店拿去抵扣金额');
+    offsetValue=money(link.outgoing);
+    offsetSub=`${state.account} → ${link.otherAccount}`;
+  }else if(link.incoming>0){
+    offsetLabel=tx('另一家店帮本店抵扣金额');
+    offsetValue=money(link.incoming);
+    offsetSub=`${link.otherAccount} → ${state.account}`;
+  }
+
+  return `<div class="v45-overview">
+    <div class="v45-hero">
+      <div class="v45-primary-card">
+        <div class="v45-primary-head">
+          <div class="v45-title-wrap">
+            <div class="v45-icon ${remainCls}"><span class="material-symbols-rounded">${remain.kind==='debit'?'payments':remain.kind==='credit'?'savings':'task_alt'}</span></div>
+            <div>
+              <div class="v45-kicker">${tx('一眼总览')}</div>
+              <div class="v45-primary-title">${tx('实际剩余金额')}</div>
+            </div>
+          </div>
+          <span class="v45-status-badge ${remainCls}"><span class="material-symbols-rounded" style="font-size:16px">${remain.kind==='debit'?'warning':remain.kind==='credit'?'verified':'check_circle'}</span>${remain.label}</span>
+        </div>
+        <div class="v45-primary-value ${remainCls}">${signedIvaLabel(remainingNet)}</div>
+        <div class="v45-primary-meta">
+          <div class="v45-meta-box"><small>${tx('联动前本店')}</small><b>${signedIvaLabel(link.ownBefore)}</b></div>
+          <div class="v45-meta-box"><small>${tx('实际联动金额')}</small><b>${money(link.used||0)}</b></div>
+          <div class="v45-meta-box"><small>${tx('联动后本店')}</small><b>${signedIvaLabel(link.ownAfter)}</b></div>
+        </div>
+      </div>
+      <div class="v45-side-stack">
+        <div class="v45-side-card">
+          <div class="v45-icon offset"><span class="material-symbols-rounded">sync_alt</span></div>
+          <div class="v45-side-content">
+            <div class="v45-side-label">${offsetLabel}</div>
+            <div class="v45-side-value">${offsetValue}</div>
+            <div class="v45-side-sub">${offsetSub}</div>
+          </div>
+        </div>
+        <div class="v45-side-card">
+          <div class="v45-icon acct"><span class="material-symbols-rounded">verified_user</span></div>
+          <div class="v45-side-content">
+            <div class="v45-side-label">${tx('会计师预估')}</div>
+            <div class="v45-side-value ${accountantHas?v45StatusClass(v28SignedStatus(accountantNet).kind):'flat'}">${accountantLabel}</div>
+            <div class="v45-side-sub">${tx('会计师当前预估余额')}</div>
+          </div>
+        </div>
+        <div class="v45-side-card">
+          <div class="v45-icon diff"><span class="material-symbols-rounded">compare_arrows</span></div>
+          <div class="v45-side-content">
+            <div class="v45-side-label">${tx('会计师和系统差额')}</div>
+            <div class="v45-side-value ${diffInfo.cls}">${diffInfo.value}</div>
+            <div class="v45-side-sub">${tx('会计师减系统')} · ${diffInfo.sub}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="v45-base-grid">
+      ${v45BaseMetricCard('blue','point_of_sale',tx('营业额'),money(s.rangeChiusura),periodName())}
+      ${v45BaseMetricCard('purple','percent',tx('销项IVA'),money(s.salesIva))}
+      ${v45BaseMetricCard('green','receipt_long',tx('可抵扣进项IVA'),money(s.fattureIva))}
+      ${v45BaseMetricCard('teal','folder_open',tx('发票金额'),money(s.totale))}
+    </div>
+  </div>`;
+}
+
+const _v45DashboardBase = dashboardHTML;
+dashboardHTML = function(){
+  const sys=v38SystemSnapshot();
+  const acc=v38AccountantSnapshot();
+  const s=sys.s;
+  const ownMetrics={revenue:num(s.rangeChiusura),salesIva:num(s.salesIva),purchaseIva:num(s.fattureIva),invoiceTotal:num(s.totale)};
+
+  return `<div class="v24-dashboard v32-dashboard-wrap">
+    ${tabs()}
+
+    <section class="v40-section v42-summary-wrap">
+      <div class="v40-section-title"><span class="material-symbols-rounded">dashboard</span><b>${tx('本店信息')}</b></div>
+      ${v45SmartStoreInfoHTML(sys,acc)}
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">sync_alt</span><b>${tx('系统联动派')}</b></div>
+      <div class="v42-section-note">${currentLang==='it'?'Mostra in modo chiaro se il risultato del sistema è IVA a credito, IVA a debito o in pareggio.':'清楚显示系统联动后到底是可抵扣 IVA、应缴 IVA，还是已平。'}</div>
+      <div style="position:relative">${v38SystemPieHTML(sys)}<button class="v34-detail-btn" style="position:absolute;right:18px;top:58px;z-index:2" onclick="openOverviewDetailModal('system_iva')"><span class="material-symbols-rounded" style="font-size:16px">open_in_new</span>${tx('查看详情')}</button></div>
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">verified_user</span><b>${tx('会计师IVA')}</b></div>
+      <div style="position:relative">${v38AccountantPieHTML(acc)}<button class="v34-detail-btn" style="position:absolute;right:18px;top:58px;z-index:2" onclick="openOverviewDetailModal('accountant_iva')"><span class="material-symbols-rounded" style="font-size:16px">open_in_new</span>${tx('查看详情')}</button></div>
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">storefront</span><b>${tx('本店联动明细')}</b></div>
+      <div style="position:relative">${v40StoreLinkedPieHTML(sys)}<button class="v34-detail-btn" style="position:absolute;right:18px;top:58px;z-index:2" onclick="openOverviewDetailModal('store_link_iva')"><span class="material-symbols-rounded" style="font-size:16px">open_in_new</span>${tx('查看详情')}</button></div>
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">monitoring</span><b>${tx('经营概览')}</b></div>
+      <div class="v40-operating-grid">
+        ${v25MetricsBlock(tx('本店数据'),'storefront',ownMetrics)}
+        ${v26TrendCardHTML(false)}
+      </div>
+    </section>
+
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">receipt_long</span><b>${tx('发票动态')}</b></div>
+      ${v32RecentInvoicesHTML(s)}
+    </section>
+  </div>`;
+};
+
+if(typeof appUnlocked!=='undefined'&&appUnlocked&&state.account){setTimeout(render,0)}
+</script>
+
+
+
+<!-- V46: polished, clearer mobile-friendly overview -->
+<style>
+.v46-overview{display:grid;gap:14px}
+.v46-hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.95fr);gap:14px;align-items:stretch}
+.v46-card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);min-width:0}
+.v46-main-card{padding:18px;position:relative;overflow:hidden}
+.v46-main-card:before{content:'';position:absolute;right:-32px;top:-30px;width:120px;height:120px;border-radius:50%;background:rgba(37,99,235,.06)}
+.v46-main-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;position:relative;z-index:1}
+.v46-head-group{display:flex;align-items:center;gap:12px;min-width:0}
+.v46-icon-badge{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;flex:0 0 auto}
+.v46-icon-badge .material-symbols-rounded{font-size:24px}
+.v46-icon-badge.credit{background:#dcfce7;color:#16a34a}
+.v46-icon-badge.debit{background:#fee2e2;color:#ef4444}
+.v46-icon-badge.flat{background:#e2e8f0;color:#64748b}
+.v46-icon-badge.blue{background:#dbeafe;color:#2563eb}
+.v46-icon-badge.purple{background:#f3e8ff;color:#7c3aed}
+.v46-icon-badge.orange{background:#fef3c7;color:#d97706}
+.v46-kicker{font-size:11px;color:var(--muted);font-weight:900;letter-spacing:.01em}
+.v46-main-title{font-size:18px;font-weight:900;line-height:1.2;margin-top:2px}
+.v46-main-value{margin-top:14px;font-size:30px;font-weight:900;line-height:1.05;word-break:break-word;position:relative;z-index:1}
+.v46-main-value.credit{color:#16a34a}.v46-main-value.debit{color:#ef4444}.v46-main-value.flat{color:#334155}
+.v46-pill{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;font-size:11px;font-weight:900;white-space:nowrap;border:1px solid transparent}
+.v46-pill.credit{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}
+.v46-pill.debit{background:#fef2f2;color:#dc2626;border-color:#fecaca}
+.v46-pill.flat{background:#f8fafc;color:#475569;border-color:#e2e8f0}
+.v46-main-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px;position:relative;z-index:1}
+.v46-stat-box{padding:11px 12px;border-radius:15px;background:#f8fafc;border:1px solid var(--line);min-width:0}
+.v46-stat-box small{display:block;color:var(--muted);font-size:10px;font-weight:900;margin-bottom:4px}
+.v46-stat-box b{display:block;font-size:14px;line-height:1.25;word-break:break-word}
+.v46-side-stack{display:grid;gap:14px}
+.v46-side-card{padding:15px;display:flex;align-items:flex-start;gap:12px;min-width:0}
+.v46-side-content{min-width:0;flex:1}
+.v46-side-label{font-size:12px;font-weight:900;color:#475569;line-height:1.25}
+.v46-side-value{margin-top:6px;font-size:24px;font-weight:900;line-height:1.08;word-break:break-word}
+.v46-side-value.credit{color:#16a34a}.v46-side-value.debit{color:#ef4444}.v46-side-value.flat{color:#334155}
+.v46-side-sub{margin-top:6px;font-size:10.5px;color:var(--muted);font-weight:800;line-height:1.4;word-break:break-word}
+.v46-base-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.v46-mini-card{padding:14px 15px;display:flex;align-items:flex-start;gap:10px;min-width:0}
+.v46-mini-badge{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;flex:0 0 auto}
+.v46-mini-badge .material-symbols-rounded{font-size:21px}
+.v46-mini-badge.blue{background:#dbeafe;color:#2563eb}
+.v46-mini-badge.purple{background:#ede9fe;color:#7c3aed}
+.v46-mini-badge.green{background:#dcfce7;color:#16a34a}
+.v46-mini-badge.teal{background:#ccfbf1;color:#0f766e}
+.v46-mini-label{font-size:11px;line-height:1.2;color:#64748b;font-weight:900}
+.v46-mini-value{margin-top:5px;font-size:19px;font-weight:900;line-height:1.1;word-break:break-word}
+.v46-mini-sub{margin-top:4px;font-size:10px;line-height:1.35;color:var(--muted);font-weight:800;word-break:break-word}
+@media(max-width:1180px){
+  .v46-hero{grid-template-columns:1fr}
+  .v46-side-stack{grid-template-columns:repeat(3,minmax(0,1fr));display:grid}
+}
+@media(max-width:900px){
+  .v46-main-grid{grid-template-columns:1fr 1fr}
+  .v46-side-stack{grid-template-columns:1fr}
+  .v46-base-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  .v40-section{gap:8px!important}
+  .v40-section-title b{font-size:12.5px!important}
+  .v42-section-note{font-size:10px!important;line-height:1.4!important}
+  .v46-overview{gap:10px}
+  .v46-hero{gap:10px}
+  .v46-card{border-radius:18px}
+  .v46-main-card{padding:14px}
+  .v46-icon-badge{width:40px;height:40px;border-radius:13px}
+  .v46-icon-badge .material-symbols-rounded{font-size:21px}
+  .v46-kicker{font-size:10px}
+  .v46-main-title{font-size:15px}
+  .v46-main-value{font-size:23px;margin-top:10px}
+  .v46-pill{font-size:10px;padding:6px 9px;max-width:140px;justify-content:center;white-space:normal;line-height:1.2}
+  .v46-main-grid{grid-template-columns:1fr;gap:8px;margin-top:10px}
+  .v46-stat-box{padding:9px 10px;border-radius:12px}
+  .v46-stat-box b{font-size:13px}
+  .v46-side-card{padding:12px;gap:10px}
+  .v46-side-label{font-size:11px}
+  .v46-side-value{font-size:18px}
+  .v46-side-sub{font-size:9.5px}
+  .v46-base-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .v46-mini-card{padding:12px}
+  .v46-mini-badge{width:32px;height:32px;border-radius:11px}
+  .v46-mini-badge .material-symbols-rounded{font-size:18px}
+  .v46-mini-label{font-size:10px}
+  .v46-mini-value{font-size:15px}
+  .v46-mini-sub{font-size:9.5px}
+  .v32-pie-card,.v26-trend-card,.v25-row-card,.v32-invoices-card{border-radius:18px!important}
+  .v32-pie-head h3,.v25-row-head b,.v26-trend-head b,.v32-card-head h3{font-size:15px!important}
+  .v32-legend-row span{font-size:12px!important;line-height:1.25!important}
+  .v32-legend-row b{font-size:12.5px!important;line-height:1.25!important;word-break:break-word}
+  .v34-detail-btn{font-size:11px!important;padding:0 9px!important;height:28px!important}
+}
+</style>
+<script>
+Object.assign(it,{
+  '总览核心结果':'Risultato principale',
+  '系统联动说明':'Dettaglio compensazione sistema',
+  '系统联动后':'Dopo compensazione sistema'
+});
+
+function v46Cls(kind){ return kind==='debit'?'debit':kind==='credit'?'credit':'flat'; }
+function v46DiffInfo(diff){
+  diff=num(diff);
+  if(Math.abs(diff)<0.005) return {value:money(0), sub:tx('已平'), cls:'flat'};
+  return {value:(diff>0?'+':'−') + money(Math.abs(diff)), sub:(diff>0?tx('会计师更高'):tx('系统更高')), cls:(diff>0?'credit':'debit')};
+}
+function v46SmallMetricCard(color, icon, label, value, sub=''){
+  return `<div class="v46-card v46-mini-card">
+    <div class="v46-mini-badge ${color}"><span class="material-symbols-rounded">${icon}</span></div>
+    <div style="min-width:0;flex:1">
+      <div class="v46-mini-label">${label}</div>
+      <div class="v46-mini-value">${value}</div>
+      ${sub?`<div class="v46-mini-sub">${sub}</div>`:''}
+    </div>
+  </div>`;
+}
+
+const _v46OldSmartStore = typeof v45SmartStoreInfoHTML==='function' ? v45SmartStoreInfoHTML : null;
+v45SmartStoreInfoHTML = function(sys=v38SystemSnapshot(), acc=v38AccountantSnapshot()){
+  const s=sys.s;
+  const link=v40StoreLinkSnapshot(sys);
+  const remainingNet=sys.linked?num(link.ownAfter):num(sys.ownNet);
+  const remain=v28SignedStatus(remainingNet);
+  const remainCls=v46Cls(remain.kind);
+  const accountantHas=!!acc.has;
+  const accountantNet=accountantHas?num(acc.auth.effectiveNet):0;
+  const accStatus=accountantHas?v28SignedStatus(accountantNet):{kind:'flat'};
+  const accountantLabel=accountantHas?signedIvaLabel(accountantNet):tx('未填写');
+  const diffInfo=accountantHas ? v46DiffInfo(accountantNet - num(sys.finalNet)) : {value:tx('未填写'), sub:tx('无会计师记录'), cls:'flat'};
+
+  let offsetLabel=tx('实际联动金额');
+  let offsetValue=money(link.used||0);
+  let offsetSub=tx('无实际联动抵扣');
+  if(link.outgoing>0){
+    offsetLabel=tx('被另一家店拿去抵扣金额');
+    offsetValue=money(link.outgoing);
+    offsetSub=`${state.account} → ${link.otherAccount}`;
+  }else if(link.incoming>0){
+    offsetLabel=tx('另一家店帮本店抵扣金额');
+    offsetValue=money(link.incoming);
+    offsetSub=`${link.otherAccount} → ${state.account}`;
+  }
+
+  return `<div class="v46-overview">
+    <div class="v46-hero">
+      <div class="v46-card v46-main-card">
+        <div class="v46-main-top">
+          <div class="v46-head-group">
+            <div class="v46-icon-badge ${remainCls}"><span class="material-symbols-rounded">${remain.kind==='debit'?'payments':remain.kind==='credit'?'savings':'task_alt'}</span></div>
+            <div>
+              <div class="v46-kicker">${tx('总览核心结果')}</div>
+              <div class="v46-main-title">${tx('实际剩余金额')}</div>
+            </div>
+          </div>
+          <span class="v46-pill ${remainCls}"><span class="material-symbols-rounded" style="font-size:15px">${remain.kind==='debit'?'warning':remain.kind==='credit'?'verified':'check_circle'}</span>${remain.label}</span>
+        </div>
+        <div class="v46-main-value ${remainCls}">${signedIvaLabel(remainingNet)}</div>
+        <div class="v46-main-grid">
+          <div class="v46-stat-box"><small>${tx('联动前本店')}</small><b>${signedIvaLabel(link.ownBefore)}</b></div>
+          <div class="v46-stat-box"><small>${tx('实际联动金额')}</small><b>${money(link.used||0)}</b></div>
+          <div class="v46-stat-box"><small>${tx('系统联动后')}</small><b>${signedIvaLabel(link.ownAfter)}</b></div>
+        </div>
+      </div>
+      <div class="v46-side-stack">
+        <div class="v46-card v46-side-card">
+          <div class="v46-icon-badge blue"><span class="material-symbols-rounded">sync_alt</span></div>
+          <div class="v46-side-content">
+            <div class="v46-side-label">${offsetLabel}</div>
+            <div class="v46-side-value">${offsetValue}</div>
+            <div class="v46-side-sub">${offsetSub}</div>
+          </div>
+        </div>
+        <div class="v46-card v46-side-card">
+          <div class="v46-icon-badge purple"><span class="material-symbols-rounded">verified_user</span></div>
+          <div class="v46-side-content">
+            <div class="v46-side-label">${tx('会计师预估')}</div>
+            <div class="v46-side-value ${v46Cls(accStatus.kind)}">${accountantLabel}</div>
+            <div class="v46-side-sub">${tx('会计师当前预估余额')}</div>
+          </div>
+        </div>
+        <div class="v46-card v46-side-card">
+          <div class="v46-icon-badge orange"><span class="material-symbols-rounded">compare_arrows</span></div>
+          <div class="v46-side-content">
+            <div class="v46-side-label">${tx('会计师和系统差额')}</div>
+            <div class="v46-side-value ${diffInfo.cls}">${diffInfo.value}</div>
+            <div class="v46-side-sub">${tx('会计师减系统')} · ${diffInfo.sub}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="v46-base-grid">
+      ${v46SmallMetricCard('blue','point_of_sale',tx('营业额'),money(s.rangeChiusura),periodName())}
+      ${v46SmallMetricCard('purple','percent',tx('销项IVA'),money(s.salesIva))}
+      ${v46SmallMetricCard('green','receipt_long',tx('可抵扣进项IVA'),money(s.fattureIva))}
+      ${v46SmallMetricCard('teal','folder_open',tx('发票金额'),money(s.totale))}
+    </div>
+  </div>`;
+};
+
+const _v46DashboardBase = dashboardHTML;
+dashboardHTML = function(){
+  const sys=v38SystemSnapshot();
+  const acc=v38AccountantSnapshot();
+  const s=sys.s;
+  const ownMetrics={revenue:num(s.rangeChiusura),salesIva:num(s.salesIva),purchaseIva:num(s.fattureIva),invoiceTotal:num(s.totale)};
+  return `<div class="v24-dashboard v32-dashboard-wrap">
+    ${tabs()}
+    <section class="v40-section v42-summary-wrap">
+      <div class="v40-section-title"><span class="material-symbols-rounded">dashboard</span><b>${tx('本店信息')}</b></div>
+      ${v45SmartStoreInfoHTML(sys,acc)}
+    </section>
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">sync_alt</span><b>${tx('系统联动派')}</b></div>
+      <div class="v42-section-note">${currentLang==='it'?'Mostra in modo chiaro se il risultato del sistema è IVA a credito, IVA a debito o in pareggio.':'清楚显示系统联动后到底是可抵扣 IVA、应缴 IVA，还是已平。'}</div>
+      <div style="position:relative">${v38SystemPieHTML(sys)}<button class="v34-detail-btn" style="position:absolute;right:18px;top:58px;z-index:2" onclick="openOverviewDetailModal('system_iva')"><span class="material-symbols-rounded" style="font-size:16px">open_in_new</span>${tx('查看详情')}</button></div>
+    </section>
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">verified_user</span><b>${tx('会计师IVA')}</b></div>
+      <div style="position:relative">${v38AccountantPieHTML(acc)}<button class="v34-detail-btn" style="position:absolute;right:18px;top:58px;z-index:2" onclick="openOverviewDetailModal('accountant_iva')"><span class="material-symbols-rounded" style="font-size:16px">open_in_new</span>${tx('查看详情')}</button></div>
+    </section>
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">storefront</span><b>${tx('本店联动明细')}</b></div>
+      <div style="position:relative">${v40StoreLinkedPieHTML(sys)}<button class="v34-detail-btn" style="position:absolute;right:18px;top:58px;z-index:2" onclick="openOverviewDetailModal('store_link_iva')"><span class="material-symbols-rounded" style="font-size:16px">open_in_new</span>${tx('查看详情')}</button></div>
+    </section>
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">monitoring</span><b>${tx('经营概览')}</b></div>
+      <div class="v40-operating-grid">${v25MetricsBlock(tx('本店数据'),'storefront',ownMetrics)}${v26TrendCardHTML(false)}</div>
+    </section>
+    <section class="v40-section">
+      <div class="v40-section-title"><span class="material-symbols-rounded">receipt_long</span><b>${tx('发票动态')}</b></div>
+      ${v32RecentInvoicesHTML(s)}
+    </section>
+  </div>`;
+};
+
+if(typeof appUnlocked!=='undefined'&&appUnlocked&&state.account){setTimeout(render,0)}
+</script>
+
+
+
+<!-- V47: make accountant offset logic explicit; mobile-friendly -->
+<style>
+.v47-formula{
+  display:flex;align-items:center;gap:7px;
+  margin-top:10px;padding:9px 11px;border-radius:13px;
+  background:#f8fafc;border:1px solid var(--line);
+  color:#475569;font-size:10.5px;font-weight:900;line-height:1.35
+}
+.v47-formula .material-symbols-rounded{font-size:17px;color:#7c3aed;flex:0 0 auto}
+.v47-status-line{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin-top:9px;padding:9px 11px;border-radius:13px;border:1px solid var(--line)
+}
+.v47-status-line small{font-size:10px;color:var(--muted);font-weight:900}
+.v47-status-line b{font-size:13px;font-weight:900}
+@media(max-width:600px){
+  .v47-formula{font-size:9.5px!important;padding:8px 9px!important;border-radius:11px!important}
+  .v47-status-line{padding:8px 9px!important;border-radius:11px!important}
+  .v47-status-line small{font-size:9.5px!important}
+  .v47-status-line b{font-size:12px!important;word-break:break-word}
+}
+</style>
+
+<script>
+Object.assign(it,{
+  '会计师计算公式':'Formula calcolo commercialista',
+  '基准 + 截止日后销项IVA - 截止日后进项IVA':'Base + IVA vendite dopo la data limite - IVA acquisti detraibile dopo la data limite',
+  '进项发票可抵扣营业额IVA':'L’IVA delle fatture di acquisto detraibili compensa l’IVA delle vendite',
+  '截止日后净变动':'Movimento netto dopo la data limite'
+});
+
+const _v47AccountantPieBase = v38AccountantPieHTML;
+v38AccountantPieHTML = function(acc){
+  if(!acc.has){
+    return `<div class="v32-pie-card">
+      <div class="v32-pie-head">
+        <div><h3>${tx('会计师IVA')}</h3><small>${state.account}</small></div>
+        <span class="v32-scope-chip v38-accountant-chip">${tx('会计师独立计算')}</span>
+      </div>
+      <div class="v32-pie-inner">
+        <div class="v32-donut flat v38-empty-donut" data-label="${tx('会计师未录入')}"></div>
+        <div>
+          <div class="v32-legend">
+            <div class="v32-legend-row"><span><span class="material-symbols-rounded" style="color:#7c3aed">verified_user</span>${tx('会计师基准金额')}</span><b>—</b></div>
+            <div class="v32-legend-row"><span><span class="material-symbols-rounded">date_range</span>${tx('开始日期')}</span><b>—</b></div>
+            <div class="v32-legend-row"><span><span class="material-symbols-rounded">event</span>${tx('截止日期')}</span><b>—</b></div>
+          </div>
+          <div class="v47-formula"><span class="material-symbols-rounded">calculate</span>${tx('基准 + 截止日后销项IVA - 截止日后进项IVA')}</div>
+          <div class="v38-rule-note">${tx('会计师未录入')}。${currentLang==='it'?'Il calcolo del sistema continua comunque in modo indipendente.':'系统 IVA 仍然会独立正常计算，不受影响。'}</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  const auth=acc.auth;
+  const post=acc.post;
+  const status=v28SignedStatus(auth.effectiveNet);
+  const cls=status.kind==='debit'?'debit':status.kind==='credit'?'credit':'flat';
+  const baseAbs=Math.abs(num(auth.baseline));
+  const sales=Math.abs(num(post.salesIva));
+  const purchase=Math.abs(num(post.purchaseIva));
+  const current=Math.abs(num(status.amount));
+  const total=baseAbs+sales+purchase+current;
+  let bg='conic-gradient(#e5e7eb 0 100%)';
+  if(total>0){
+    const p1=baseAbs/total*100,p2=sales/total*100,p3=purchase/total*100;
+    const e2=p1+p2,e3=e2+p3;
+    const statusColor=status.kind==='debit'?'#ef4444':status.kind==='credit'?'#16a34a':'#94a3b8';
+    bg=`conic-gradient(#8b5cf6 0 ${p1}%, #60a5fa ${p1}% ${e2}%, #22c55e ${e2}% ${e3}%, ${statusColor} ${e3}% 100%)`;
+  }
+
+  const start=acc.a.startDate||v29DefaultPeriodStart(acc.a.sourceKey||acc.key);
+  const cutoff=auth.cutoff||acc.a.cutoff||'';
+  const netMove=num(post.salesIva)-num(post.purchaseIva);
+
+  return `<div class="v32-pie-card">
+    <div class="v32-pie-head">
+      <div><h3>${tx('会计师IVA')}</h3><small>${state.account} · ${toSlashDate(start)||'—'} → ${toSlashDate(cutoff)||'—'}</small></div>
+      <span class="v32-scope-chip v38-accountant-chip">${tx('会计师独立计算')}</span>
+    </div>
+    <div class="v32-pie-inner">
+      <div class="v32-donut ${cls}" style="background:${bg}" data-label="${status.label}\n${money(status.amount)}"></div>
+      <div>
+        <div class="v32-legend">
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded" style="color:#8b5cf6">verified_user</span>${tx('会计师基准金额')}</span><b>${signedIvaLabel(auth.baseline)}</b></div>
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded">date_range</span>${tx('开始日期')}</span><b>${toSlashDate(start)||'—'}</b></div>
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded">event</span>${tx('截止日期')}</span><b>${toSlashDate(cutoff)||'—'}</b></div>
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded" style="color:#60a5fa">percent</span>${tx('截止日后销项IVA')}</span><b>${money(post.salesIva)}</b></div>
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded" style="color:#22c55e">receipt_long</span>${tx('截止日后进项IVA')}</span><b>− ${money(post.purchaseIva)}</b></div>
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded" style="color:#64748b">calculate</span>${tx('截止日后净变动')}</span><b>${netMove>0?'+':''}${money(netMove)}</b></div>
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded ${cls==='debit'?'v32-status-debit':cls==='credit'?'v32-status-credit':'v32-status-flat'}">account_balance_wallet</span>${tx('会计师当前IVA')}</span><b class="${cls==='debit'?'v32-status-debit':cls==='credit'?'v32-status-credit':'v32-status-flat'}">${signedIvaLabel(auth.effectiveNet)}</b></div>
+        </div>
+
+        <div class="v47-formula">
+          <span class="material-symbols-rounded">calculate</span>
+          <span><b>${tx('会计师计算公式')}：</b> ${tx('基准 + 截止日后销项IVA - 截止日后进项IVA')}</span>
+        </div>
+
+        <div class="v47-status-line">
+          <small>${tx('进项发票可抵扣营业额IVA')}</small>
+          <b class="${cls==='debit'?'v32-status-debit':cls==='credit'?'v32-status-credit':'v32-status-flat'}">${status.label}</b>
+        </div>
+
+        <div class="v38-rule-note">
+          ${tx('覆盖期间内发票不改变会计师余额')}；${tx('会计师仅从截止日次日继续计算')}。
+          ${currentLang==='it'
+            ? 'Dopo la data limite, l’IVA detraibile delle nuove fatture di acquisto riduce l’IVA a debito oppure aumenta il credito IVA.'
+            : '截止日之后，新进项发票的可抵扣 IVA 会直接抵销营业额销项 IVA：有应缴就减少应缴；已经是可抵扣则继续增加 Credito。'}
+        </div>
+      </div>
+    </div>
+  </div>`;
+};
+
+const _v47DetailBase = v34OverviewDetailData;
+v34OverviewDetailData = function(type){
+  if(type==='accountant_iva'){
+    const acc=v38AccountantSnapshot();
+    if(!acc.has)return {title:tx('会计师IVA'),sub:state.account,body:`<div class="v34-modal-note">${tx('会计师未录入')}</div>`};
+
+    const a=acc.auth;
+    const st=v28SignedStatus(a.effectiveNet);
+    const start=acc.a.startDate||v29DefaultPeriodStart(acc.a.sourceKey||acc.key);
+    const netMove=num(acc.post.salesIva)-num(acc.post.purchaseIva);
+
+    return {
+      title:tx('会计师IVA'),
+      sub:state.account,
+      body:v34DetailModalGrid([
+        {label:tx('会计师基准金额'),value:signedIvaLabel(a.baseline)},
+        {label:tx('开始日期'),value:toSlashDate(start)||'—'},
+        {label:tx('截止日期'),value:toSlashDate(a.cutoff)||'—'},
+        {label:tx('截止日后销项IVA'),value:money(acc.post.salesIva)},
+        {label:tx('截止日后进项IVA'),value:'− '+money(acc.post.purchaseIva)},
+        {label:tx('截止日后净变动'),value:(netMove>0?'+':'')+money(netMove)},
+        {label:tx('截止日后发票金额'),value:money(acc.post.invoiceTotal)},
+        {label:tx('会计师当前IVA'),value:signedIvaLabel(a.effectiveNet)},
+        {label:tx('当前状态'),value:st.label}
+      ])+
+      `<div class="v34-modal-note"><b>${tx('会计师计算公式')}：</b> ${tx('基准 + 截止日后销项IVA - 截止日后进项IVA')}。<br>${tx('覆盖期间内发票不改变会计师余额')}；${tx('会计师仅从截止日次日继续计算')}。</div>`
+    };
+  }
+  return _v47DetailBase(type);
+};
+
+if(typeof appUnlocked!=='undefined'&&appUnlocked&&state.account){setTimeout(render,0)}
+</script>
+
+
+
+<!-- V48: final safeguard/clarity - accountant track never changes system track -->
+<style>
+.v48-system-note{
+  display:flex;align-items:center;gap:7px;
+  margin-top:8px;padding:8px 10px;border-radius:12px;
+  background:#eff6ff;border:1px solid #bfdbfe;
+  color:#1d4ed8;font-size:10.5px;font-weight:900;line-height:1.35
+}
+.v48-system-note .material-symbols-rounded{font-size:17px;flex:0 0 auto}
+@media(max-width:600px){
+  .v48-system-note{font-size:9.5px!important;padding:7px 9px!important;border-radius:10px!important}
+  .v48-system-note .material-symbols-rounded{font-size:15px!important}
+}
+</style>
+
+<script>
+Object.assign(it,{
+  '系统完全独立':'Sistema completamente indipendente',
+  '会计师预估、历史和差额不会修改系统IVA':'Stime, storico e differenze del commercialista non modificano l’IVA del sistema'
+});
+
+const _v48SystemPieBase = v38SystemPieHTML;
+v38SystemPieHTML = function(sys){
+  const base = _v48SystemPieBase(sys);
+  return base.replace(
+    '</div></div></div>',
+    `<div class="v48-system-note"><span class="material-symbols-rounded">shield</span><span><b>${tx('系统完全独立')}：</b> ${tx('会计师预估、历史和差额不会修改系统IVA')}</span></div></div></div></div>`
+  );
+};
+
+if(typeof appUnlocked!=='undefined'&&appUnlocked&&state.account){setTimeout(render,0)}
+</script>
+
 </body></html>
