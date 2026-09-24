@@ -12744,4 +12744,250 @@ v38SystemPieHTML = function(sys){
 if(typeof appUnlocked!=='undefined'&&appUnlocked&&state.account){setTimeout(render,0)}
 </script>
 
+
+
+<!-- V49: sales IVA always offsets accountant balance; covered old invoices remain locked -->
+<style>
+.v49-rule-box{
+  display:flex;align-items:flex-start;gap:8px;
+  margin-top:9px;padding:9px 11px;border-radius:13px;
+  background:#f0fdf4;border:1px solid #bbf7d0;
+  color:#166534;font-size:10.5px;font-weight:900;line-height:1.4
+}
+.v49-rule-box .material-symbols-rounded{font-size:17px;flex:0 0 auto;margin-top:1px}
+@media(max-width:600px){
+  .v49-rule-box{font-size:9.5px!important;padding:8px 9px!important;border-radius:11px!important}
+  .v49-rule-box .material-symbols-rounded{font-size:15px!important}
+}
+</style>
+
+<script>
+Object.assign(it,{
+  '营业额IVA始终参与会计师抵扣':'L’IVA vendite partecipa sempre alla compensazione del saldo del commercialista',
+  '覆盖期内补录旧发票不改变会计师余额':'Le vecchie fatture inserite nel periodo già coperto non modificano il saldo del commercialista',
+  '用于抵扣会计师的营业额IVA':'IVA vendite usata per compensare il saldo del commercialista',
+  '会计师公式更新':'Formula commercialista aggiornata',
+  '会计师基准 + 营业额IVA - 截止日后进项IVA':'Base commercialista + IVA vendite - IVA acquisti detraibile dopo la data limite',
+  '营业额会影响会计师余额':'La chiusura modifica anche il saldo del commercialista'
+});
+
+/* Sales IVA is counted from the accountant record start date through today.
+   Covered-period old purchase invoices remain locked; only purchase invoices after cutoff
+   continue changing the accountant balance. */
+function v49SalesRange(data,startInclusive,endInclusive=todayISO()){
+  data=data||{};
+  let salesIva=0,revenue=0;
+  Object.values(data.chiusure||{}).forEach(x=>{
+    if(!x)return;
+    const d=v23ISODate(x.data);
+    if(!d)return;
+    if(startInclusive && d<startInclusive)return;
+    if(endInclusive && d>endInclusive)return;
+    salesIva+=num(x.ivaVendite);
+    revenue+=num(x.totale);
+  });
+  return {salesIva,revenue};
+}
+
+function v49PurchaseAfterCutoff(data,cutoff,endInclusive=todayISO()){
+  const p=v23RangeParts(data||{},cutoff,endInclusive);
+  return {
+    purchaseIva:num(p.imposta),
+    invoiceTotal:num(p.totale),
+    invoiceCount:num(p.count),
+    rows:p.rows||[]
+  };
+}
+
+/* Override accountant running balance only.
+   SYSTEM remains untouched and continues using its original complete calculation. */
+const _v49AuthBase = v28AuthoritativePosition;
+v28AuthoritativePosition = function(s=calcSummary(),key=(s&&s.adjustmentKey)||accountantKeyForPeriod(state.period,todayISO())){
+  const a=v30GetAuthority();
+  if(!a.has)return _v49AuthBase(s,key);
+
+  const linked=v19IsLinkedAccount();
+  const cutoff=v23ISODate(a.cutoff||a.date||(a.raw&&a.raw.cutoffDate))||todayISO();
+  const start=v23ISODate(a.startDate||(a.raw&&a.raw.startDate))||v29DefaultPeriodStart(a.sourceKey||key);
+  const baseline=num(a.signed);
+
+  let rawSystemNet=systemSignedNet(s);
+  if(linked){
+    const pair=linkedPairSummaries();
+    if(pair)rawSystemNet=linkedCompensationFromSigned(pair.emp.net,pair.sun.net).groupNet;
+  }
+
+  let salesIva=0,revenue=0,purchaseIva=0,invoiceTotal=0;
+  let details=null;
+
+  if(linked){
+    const pairData=v9LinkedDatas();
+    if(pairData){
+      const es=v49SalesRange(pairData.emp,start,todayISO());
+      const ss=v49SalesRange(pairData.sun,start,todayISO());
+      const ep=v49PurchaseAfterCutoff(pairData.emp,cutoff,todayISO());
+      const sp=v49PurchaseAfterCutoff(pairData.sun,cutoff,todayISO());
+
+      salesIva=num(es.salesIva)+num(ss.salesIva);
+      revenue=num(es.revenue)+num(ss.revenue);
+      purchaseIva=num(ep.purchaseIva)+num(sp.purchaseIva);
+      invoiceTotal=num(ep.invoiceTotal)+num(sp.invoiceTotal);
+
+      details={
+        emp:{parts:{salesIva:num(es.salesIva),imposta:num(ep.purchaseIva),fattureIva:num(ep.purchaseIva),totale:num(ep.invoiceTotal),chiusura:num(es.revenue),rangeChiusura:num(es.revenue)}},
+        sun:{parts:{salesIva:num(ss.salesIva),imposta:num(sp.purchaseIva),fattureIva:num(sp.purchaseIva),totale:num(sp.invoiceTotal),chiusura:num(ss.revenue),rangeChiusura:num(ss.revenue)}}
+      };
+    }
+  }else{
+    const sr=v49SalesRange(state.data||{},start,todayISO());
+    const pr=v49PurchaseAfterCutoff(state.data||{},cutoff,todayISO());
+    salesIva=num(sr.salesIva);
+    revenue=num(sr.revenue);
+    purchaseIva=num(pr.purchaseIva);
+    invoiceTotal=num(pr.invoiceTotal);
+    details={
+      parts:{
+        salesIva,
+        imposta:purchaseIva,
+        fattureIva:purchaseIva,
+        totale:invoiceTotal,
+        chiusura:revenue,
+        rangeChiusura:revenue
+      }
+    };
+  }
+
+  /* Signed convention:
+     debit = positive, credit = negative.
+     Sales IVA pushes toward debit; deductible purchase IVA pushes toward credit. */
+  const delta=salesIva-purchaseIva;
+  const effectiveNet=baseline+delta;
+  const st=v28SignedStatus(effectiveNet);
+
+  return {
+    a,key,requestedKey:key,linked,active:true,
+    cutoff,start,baseline,delta,effectiveNet,rawSystemNet,details,
+    salesIva,purchaseIva,revenue,invoiceTotal,
+    ...st
+  };
+};
+
+/* Keep retroactive invoice protection, but DO NOT block/neutralize sales.
+   A saved closure always participates in accountant balance. */
+addChiusuraManual = function(){
+  const c=readChiusuraForm();
+  const hasInput=(c.values||[]).some(v=>String(v).trim()!=='')||(c.ivaValues||[]).some(v=>String(v).trim()!=='');
+  if(!hasInput)return;
+  state.chiusuraDate=c.data;
+  return save('chiusure/'+c.data,c).then(()=>setTimeout(render,200));
+};
+
+/* Make accountant visualization match the new rule. */
+v38AccountantPieHTML = function(acc){
+  if(!acc.has){
+    return `<div class="v32-pie-card">
+      <div class="v32-pie-head">
+        <div><h3>${tx('会计师IVA')}</h3><small>${state.account}</small></div>
+        <span class="v32-scope-chip v38-accountant-chip">${tx('会计师独立计算')}</span>
+      </div>
+      <div class="v32-pie-inner">
+        <div class="v32-donut flat v38-empty-donut" data-label="${tx('会计师未录入')}"></div>
+        <div>
+          <div class="v32-legend">
+            <div class="v32-legend-row"><span><span class="material-symbols-rounded" style="color:#7c3aed">verified_user</span>${tx('会计师基准金额')}</span><b>—</b></div>
+            <div class="v32-legend-row"><span><span class="material-symbols-rounded">date_range</span>${tx('开始日期')}</span><b>—</b></div>
+            <div class="v32-legend-row"><span><span class="material-symbols-rounded">event</span>${tx('截止日期')}</span><b>—</b></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  const auth=acc.auth;
+  const post=acc.post;
+  const status=v28SignedStatus(auth.effectiveNet);
+  const cls=status.kind==='debit'?'debit':status.kind==='credit'?'credit':'flat';
+  const baseAbs=Math.abs(num(auth.baseline));
+  const sales=Math.abs(num(post.salesIva));
+  const purchase=Math.abs(num(post.purchaseIva));
+  const current=Math.abs(num(status.amount));
+  const total=baseAbs+sales+purchase+current;
+  let bg='conic-gradient(#e5e7eb 0 100%)';
+  if(total>0){
+    const p1=baseAbs/total*100,p2=sales/total*100,p3=purchase/total*100;
+    const e2=p1+p2,e3=e2+p3;
+    const statusColor=status.kind==='debit'?'#ef4444':status.kind==='credit'?'#16a34a':'#94a3b8';
+    bg=`conic-gradient(#8b5cf6 0 ${p1}%, #60a5fa ${p1}% ${e2}%, #22c55e ${e2}% ${e3}%, ${statusColor} ${e3}% 100%)`;
+  }
+
+  const start=auth.start||acc.a.startDate||v29DefaultPeriodStart(acc.a.sourceKey||acc.key);
+  const cutoff=auth.cutoff||acc.a.cutoff||'';
+  const netMove=num(post.salesIva)-num(post.purchaseIva);
+
+  return `<div class="v32-pie-card">
+    <div class="v32-pie-head">
+      <div><h3>${tx('会计师IVA')}</h3><small>${state.account} · ${toSlashDate(start)||'—'} → ${toSlashDate(cutoff)||'—'}</small></div>
+      <span class="v32-scope-chip v38-accountant-chip">${tx('会计师独立计算')}</span>
+    </div>
+    <div class="v32-pie-inner">
+      <div class="v32-donut ${cls}" style="background:${bg}" data-label="${status.label}\n${money(status.amount)}"></div>
+      <div>
+        <div class="v32-legend">
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded" style="color:#8b5cf6">verified_user</span>${tx('会计师基准金额')}</span><b>${signedIvaLabel(auth.baseline)}</b></div>
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded">date_range</span>${tx('开始日期')}</span><b>${toSlashDate(start)||'—'}</b></div>
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded">event</span>${tx('截止日期')}</span><b>${toSlashDate(cutoff)||'—'}</b></div>
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded" style="color:#60a5fa">point_of_sale</span>${tx('用于抵扣会计师的营业额IVA')}</span><b>+ ${money(post.salesIva)}</b></div>
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded" style="color:#22c55e">receipt_long</span>${tx('截止日后进项IVA')}</span><b>− ${money(post.purchaseIva)}</b></div>
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded" style="color:#64748b">calculate</span>${tx('截止日后净变动')}</span><b>${netMove>0?'+':''}${money(netMove)}</b></div>
+          <div class="v32-legend-row"><span><span class="material-symbols-rounded ${cls==='debit'?'v32-status-debit':cls==='credit'?'v32-status-credit':'v32-status-flat'}">account_balance_wallet</span>${tx('会计师当前IVA')}</span><b class="${cls==='debit'?'v32-status-debit':cls==='credit'?'v32-status-credit':'v32-status-flat'}">${signedIvaLabel(auth.effectiveNet)}</b></div>
+        </div>
+
+        <div class="v49-rule-box">
+          <span class="material-symbols-rounded">point_of_sale</span>
+          <span><b>${tx('营业额IVA始终参与会计师抵扣')}</b>；${tx('覆盖期内补录旧发票不改变会计师余额')}。</span>
+        </div>
+
+        <div class="v47-formula">
+          <span class="material-symbols-rounded">calculate</span>
+          <span><b>${tx('会计师公式更新')}：</b> ${tx('会计师基准 + 营业额IVA - 截止日后进项IVA')}</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+};
+
+/* Detail modal: same wording and values. */
+const _v49DetailBase = v34OverviewDetailData;
+v34OverviewDetailData = function(type){
+  if(type==='accountant_iva'){
+    const acc=v38AccountantSnapshot();
+    if(!acc.has)return {title:tx('会计师IVA'),sub:state.account,body:`<div class="v34-modal-note">${tx('会计师未录入')}</div>`};
+    const a=acc.auth;
+    const st=v28SignedStatus(a.effectiveNet);
+    const start=a.start||acc.a.startDate||v29DefaultPeriodStart(acc.a.sourceKey||acc.key);
+    const netMove=num(acc.post.salesIva)-num(acc.post.purchaseIva);
+    return {
+      title:tx('会计师IVA'),
+      sub:state.account,
+      body:v34DetailModalGrid([
+        {label:tx('会计师基准金额'),value:signedIvaLabel(a.baseline)},
+        {label:tx('开始日期'),value:toSlashDate(start)||'—'},
+        {label:tx('截止日期'),value:toSlashDate(a.cutoff)||'—'},
+        {label:tx('用于抵扣会计师的营业额IVA'),value:'+ '+money(acc.post.salesIva)},
+        {label:tx('截止日后进项IVA'),value:'− '+money(acc.post.purchaseIva)},
+        {label:tx('截止日后净变动'),value:(netMove>0?'+':'')+money(netMove)},
+        {label:tx('会计师当前IVA'),value:signedIvaLabel(a.effectiveNet)},
+        {label:tx('当前状态'),value:st.label}
+      ])+
+      `<div class="v34-modal-note"><b>${tx('会计师公式更新')}：</b> ${tx('会计师基准 + 营业额IVA - 截止日后进项IVA')}。<br>${tx('覆盖期内补录旧发票不改变会计师余额')}。</div>`
+    };
+  }
+  return _v49DetailBase(type);
+};
+
+if(typeof appUnlocked!=='undefined'&&appUnlocked&&state.account){setTimeout(render,0)}
+</script>
+
+
+<!-- V50: confirmed final logic — system independent; sales IVA affects accountant; covered-period late invoices affect system only; post-cutoff purchase IVA affects accountant -->
 </body></html>
