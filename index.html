@@ -14435,4 +14435,217 @@ if(typeof appUnlocked!=='undefined'&&appUnlocked&&state.account){ setTimeout(ren
 }
 </style>
 
+
+
+<!-- V61: remove invoice modal accountant note; make dashboard info icons clickable -->
+<style>
+.v58-kpi-info{cursor:pointer;border:none}
+.v58-kpi-info:active{transform:scale(.97)}
+</style>
+<script>
+Object.assign(it,{
+  '已抵扣IVA':'IVA già compensata',
+  '状态说明':'Spiegazione stato',
+  '联动后本店剩余结果':'Risultato residuo del negozio dopo compensazione',
+  '本店原始IVA':'IVA originaria del negozio',
+  '关联抵扣金额':'Importo compensato dal negozio collegato',
+  '联动后余额':'Saldo dopo compensazione',
+  '当前状态由联动后余额决定':'Lo stato attuale dipende dal saldo dopo compensazione'
+});
+
+/* 1) Remove the green accountant-related guard note from invoice modal */
+const _v61OpenFatturaBase = _v30OpenFatturaBase || openFatturaModal;
+openFatturaModal = function(){
+  _v61OpenFatturaBase();
+  const old=document.getElementById('v30InvoiceGuard');
+  if(old) old.remove();
+};
+
+/* 2) Extend info modal data to support smart dashboard cards */
+const _v61ShowCalcInfoBase = showCalcInfo;
+showCalcInfo = function(kind){
+  const sys = (typeof v38SystemSnapshot==='function') ? v38SystemSnapshot() : null;
+  const s = sys && sys.s ? sys.s : calcSummary();
+  const rate = num(state.data.ivaConfig?.aliquota)||22;
+  const link = sys ? v40StoreLinkSnapshot(sys) : {incoming:0,ownBefore:0,ownAfter:0,used:0};
+  const linkedNet = sys && sys.linked ? num(link.ownAfter) : (sys ? num(sys.ownNet) : Math.max(0,num(s.gap)));
+  const remain = typeof v28SignedStatus==='function' ? v28SignedStatus(linkedNet) : {label:'',amount:0,kind:'flat'};
+  const remainingDebito = remain.kind==='debit' ? num(remain.amount) : 0;
+  const remainingNeedImp = remainingDebito>0 && rate ? remainingDebito/(rate/100) : 0;
+  const remainingNeedTot = remainingNeedImp>0 ? remainingNeedImp*(1+rate/100) : 0;
+
+  if(kind==='已抵扣IVA'){
+    closeCalcInfo();
+    const wrap=document.createElement('div');
+    wrap.id='calcInfo';
+    wrap.className='formula-backdrop';
+    wrap.onclick=e=>{if(e.target.id==='calcInfo')closeCalcInfo()};
+    wrap.innerHTML=`<div class="formula-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <h3>${tx('已抵扣IVA')}</h3>
+        <button class="icon-btn" onclick="closeCalcInfo()"><span class="material-symbols-rounded">close</span></button>
+      </div>
+      <div class="formula-note">${tx('联动后本店剩余结果')}</div>
+      <div class="formula-table">
+        <div><span>${tx('本店原始IVA')}</span><b>${signedIvaLabel(link.ownBefore)}</b></div>
+        <div><span>${tx('关联抵扣金额')}</span><b>${money(link.incoming||link.used||0)}</b></div>
+        <div><span>${tx('联动后余额')}</span><b>${signedIvaLabel(link.ownAfter)}</b></div>
+      </div>
+      <div class="formula-note">${currentLang==='it'?'Questa voce mostra quanto IVA è già stato compensato dal negozio collegato per ridurre o azzerare il debito del negozio corrente.':'这里显示关联店已经帮本店抵扣掉的 IVA 金额，以及联动后的剩余余额。'}</div>
+    </div>`;
+    document.body.appendChild(wrap);
+    return;
+  }
+
+  if(kind==='状态'){
+    closeCalcInfo();
+    const wrap=document.createElement('div');
+    wrap.id='calcInfo';
+    wrap.className='formula-backdrop';
+    wrap.onclick=e=>{if(e.target.id==='calcInfo')closeCalcInfo()};
+    wrap.innerHTML=`<div class="formula-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <h3>${tx('状态说明')}</h3>
+        <button class="icon-btn" onclick="closeCalcInfo()"><span class="material-symbols-rounded">close</span></button>
+      </div>
+      <div class="formula-table">
+        <div><span>${tx('本店原始IVA')}</span><b>${signedIvaLabel(link.ownBefore)}</b></div>
+        <div><span>${tx('关联抵扣金额')}</span><b>${money(link.used||0)}</b></div>
+        <div><span>${tx('联动后余额')}</span><b>${signedIvaLabel(link.ownAfter)}</b></div>
+        <div><span>${tx('状态')}</span><b>${remain.label} ${remain.amount?('· '+money(remain.amount)):''}</b></div>
+      </div>
+      <div class="formula-note">${tx('当前状态由联动后余额决定')}。${currentLang==='it'?'Se dopo la compensazione resta un credito, lo stato è “IVA detraibile”; se resta un debito, lo stato è “IVA da pagare”; se è zero, lo stato è “pareggiato”.':'联动后如果还剩 credito，就显示可抵扣 IVA；如果还剩 debito，就显示还要付 IVA；如果为 0，则显示已平。'}</div>
+    </div>`;
+    document.body.appendChild(wrap);
+    return;
+  }
+
+  if(kind==='要付多少IVA'){
+    closeCalcInfo();
+    const wrap=document.createElement('div');
+    wrap.id='calcInfo';
+    wrap.className='formula-backdrop';
+    wrap.onclick=e=>{if(e.target.id==='calcInfo')closeCalcInfo()};
+    wrap.innerHTML=`<div class="formula-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <h3>${tx('要付多少IVA')}</h3>
+        <button class="icon-btn" onclick="closeCalcInfo()"><span class="material-symbols-rounded">close</span></button>
+      </div>
+      <div class="formula-table">
+        <div><span>${tx('营业额IVA')}</span><b>${money(s.salesIva)}</b></div>
+        <div><span>－ ${tx('发票IVA')}</span><b>${money(s.fattureIva)}</b></div>
+        <div><span>${tx('联动后余额')}</span><b>${signedIvaLabel(linkedNet)}</b></div>
+        <div><span>= ${tx('要付多少IVA')}</span><b>${money(remainingDebito)}</b></div>
+      </div>
+      <div class="formula-note">${currentLang==='it'?'Questa cifra guarda prima il risultato dopo la compensazione tra negozi collegati. Solo se dopo la compensazione rimane ancora un debito, qui viene mostrato l’importo da pagare.':'这个数字优先看关联店抵扣后的结果。只有联动后仍然是应缴，才会在这里显示要付多少 IVA。'}</div>
+    </div>`;
+    document.body.appendChild(wrap);
+    return;
+  }
+
+  if(kind==='缺多少发票'){
+    closeCalcInfo();
+    const wrap=document.createElement('div');
+    wrap.id='calcInfo';
+    wrap.className='formula-backdrop';
+    wrap.onclick=e=>{if(e.target.id==='calcInfo')closeCalcInfo()};
+    wrap.innerHTML=`<div class="formula-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <h3>${tx('缺多少发票')}</h3>
+        <button class="icon-btn" onclick="closeCalcInfo()"><span class="material-symbols-rounded">close</span></button>
+      </div>
+      <div class="formula-table">
+        <div><span>${tx('联动后仍需缴纳的IVA')}</span><b>${money(remainingDebito)}</b></div>
+        <div><span>÷ IVA ${rate}%</span><b>${money(remainingNeedImp)}</b></div>
+        <div><span>× (1 + IVA%)</span><b>${money(remainingNeedTot)}</b></div>
+        <div><span>${tx('缺多少发票')}</span><b>${money(remainingNeedTot)}</b></div>
+      </div>
+      <div class="formula-note">${currentLang==='it'?'Se il negozio collegato ha già compensato abbastanza IVA, questo valore diventa 0. In caso contrario mostra il totale fattura IVA inclusa ancora necessario per azzerare il debito residuo.':'如果关联店已经抵扣够了，这里就是 0；如果还不够，这里显示还需要补多少“含税发票总金额”才能把剩余应缴 IVA 抵掉。'}</div>
+    </div>`;
+    document.body.appendChild(wrap);
+    return;
+  }
+
+  if(kind==='缺多少未税金额'){
+    closeCalcInfo();
+    const wrap=document.createElement('div');
+    wrap.id='calcInfo';
+    wrap.className='formula-backdrop';
+    wrap.onclick=e=>{if(e.target.id==='calcInfo')closeCalcInfo()};
+    wrap.innerHTML=`<div class="formula-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <h3>${tx('缺多少未税金额')}</h3>
+        <button class="icon-btn" onclick="closeCalcInfo()"><span class="material-symbols-rounded">close</span></button>
+      </div>
+      <div class="formula-table">
+        <div><span>${tx('联动后仍需缴纳的IVA')}</span><b>${money(remainingDebito)}</b></div>
+        <div><span>÷ IVA ${rate}%</span><b>${money(remainingNeedImp)}</b></div>
+        <div><span>${tx('缺多少未税金额')}</span><b>${money(remainingNeedImp)}</b></div>
+      </div>
+      <div class="formula-note">${currentLang==='it'?'Questo valore mostra l’imponibile ancora necessario per generare abbastanza IVA detraibile da coprire il debito residuo dopo la compensazione.':'这个值显示联动抵扣后，如果还剩应缴 IVA，大约还需要多少未税金额的进项发票才能继续抵掉。'}</div>
+    </div>`;
+    document.body.appendChild(wrap);
+    return;
+  }
+
+  _v61ShowCalcInfoBase(kind);
+};
+
+/* 3) Make every top-right info icon on overview cards open a detail modal */
+v58OverviewCardsHTML = function(s, sys=v38SystemSnapshot()){
+  const link=v40StoreLinkSnapshot(sys);
+  const linkedNet = sys.linked ? num(link.ownAfter) : num(sys.ownNet);
+  const remain = v28SignedStatus(linkedNet);
+  const rate = num(s.rate)||22;
+  const remainingDebito = remain.kind==='debit' ? num(remain.amount) : 0;
+  const remainingNeedImp = remainingDebito>0 && rate ? remainingDebito/(rate/100) : 0;
+  const remainingNeedTot = remainingNeedImp>0 ? remainingNeedImp*(1+rate/100) : 0;
+
+  const status = remain.kind==='debit'
+    ? {kind:'debit',label:tx('还要付IVA'),amount:money(remainingDebito)}
+    : remain.kind==='credit'
+      ? {kind:'credit',label:tx('可抵扣IVA'),amount:money(remain.amount)}
+      : {kind:'flat',label:tx('已平'),amount:money(0)};
+
+  const infoBtn=(kind)=>`<button class="v58-kpi-info" type="button" onclick="showCalcInfo('${kind}')"><span class="material-symbols-rounded">info</span></button>`;
+  const card=(iconColor,icon,title,value,sub,infoKind)=>`<div class="v58-kpi-card">
+    <div class="v58-kpi-icon ${iconColor}"><span class="material-symbols-rounded">${icon}</span></div>
+    <div class="v58-kpi-body">
+      <div class="v58-kpi-head"><div class="v58-kpi-title">${title}</div>${infoBtn(infoKind||title)}</div>
+      <div class="v58-kpi-value">${value}</div>
+      <div class="v58-kpi-sub">${sub||''}</div>
+    </div>
+  </div>`;
+
+  const offsetOrPayCard = link.incoming>0
+    ? card('green','sync_alt',tx('已抵扣IVA'),money(link.incoming),tx('关联店已帮本店抵扣的IVA'),'已抵扣IVA')
+    : card('orange','payments',tx('要付多少IVA'),money(remainingDebito),tx('联动后仍需缴纳的IVA'),'要付多少IVA');
+
+  const missingInvoiceSub = remainingDebito>0 ? tx('按联动后剩余应缴估算') : tx('联动后已无需补票');
+  const missingUntaxedSub = remainingDebito>0 ? tx('按联动后剩余应缴估算') : tx('联动后已无需补票');
+
+  const statusCard=`<div class="v58-kpi-card">
+    <div class="v58-kpi-icon orange"><span class="material-symbols-rounded">task_alt</span></div>
+    <div class="v58-kpi-body v58-kpi-status">
+      <div class="v58-kpi-head"><div class="v58-kpi-title">${tx('状态')}</div>${infoBtn('状态')}</div>
+      <div class="v58-status-big ${status.kind}">${status.label}</div>
+      <div class="v58-status-small">${status.amount}</div>
+    </div>
+  </div>`;
+
+  return `<div class="v58-kpi-wrap">
+    ${card('blue','point_of_sale',tx('营业额'),money(s.rangeChiusura),tx('本季度'),'营业额')}
+    ${card('purple','percent',tx('营业额IVA'),money(s.salesIva),tx('营业额产生的IVA'),'营业额IVA')}
+    ${card('green','receipt_long',tx('发票IVA'),money(s.fattureIva),tx('已录入发票的IVA'),'发票IVA')}
+    ${offsetOrPayCard}
+    ${card('orange','request_quote',tx('缺多少发票'),money(remainingNeedTot),missingInvoiceSub,'缺多少发票')}
+    ${card('blue','calculate',tx('缺多少未税金额'),money(remainingNeedImp),missingUntaxedSub,'缺多少未税金额')}
+    ${card('teal','folder_open',tx('发票金额'),money(s.totale),tx('当前已录入发票总金额'),'发票金额')}
+    ${statusCard}
+  </div>`;
+};
+
+if(typeof appUnlocked!=='undefined'&&appUnlocked&&state.account){ setTimeout(render,0); }
+</script>
+
 </body></html>
